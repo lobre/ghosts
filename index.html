@@ -1,0 +1,16 @@
+<html>
+    <h1>List of containers</h1>
+    {{ range $category, $entries := . }}
+    <h2>{{ $category | capitalize }}</h2>
+    <ul>
+        {{ if not $entries }}
+        No containers
+        {{ else }}
+            {{range $entries }}
+            {{ if .Name }}<li>{{ .Name }}</li>{{ end }}
+            {{ if .Url }}<li>{{ .Url }}</li>{{ end }}
+            {{ end }}
+        {{ end }}
+    </ul>
+    {{ end }}
+</html>
