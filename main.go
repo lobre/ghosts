@@ -11,6 +11,8 @@ func main() {
 		panic(err)
 	}
 
+	hosts()
+
 	http.HandleFunc("/", index)
 	http.ListenAndServe(":8080", nil)
 }
@@ -20,12 +22,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		"capitalize": capitalize,
 	}).ParseFiles("index.html")
 
-	containers, err := containers()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	entries := entries(containers)
+	entries, err := entries()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

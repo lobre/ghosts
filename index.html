@@ -8,7 +8,8 @@
         {{ else }}
             {{range $entries }}
             {{ if .Name }}<li>{{ .Name }}</li>{{ end }}
-            {{ if .Url }}<li>{{ .Url }}</li>{{ end }}
+            {{ if .Protocol }}<li>{{ .Protocol }}</li>{{ end }}
+            {{ if .Host }}<li>{{ .Host }}</li>{{ end }}
             {{ end }}
         {{ end }}
     </ul>

@@ -3,20 +3,24 @@ package main
 import (
 	"fmt"
 	"strings"
-
-	"github.com/docker/docker/api/types"
 )
 
-const prefix = "home"
+const prefix = "ghosts"
 const defaultCategory = "others"
 
 type entry struct {
-	Name string
-	Url  string
+	Name     string
+	Protocol string
+	Host     string
 }
 
-func entries(containers []types.Container) map[string][]entry {
+func entries() (map[string][]entry, error) {
 	entries := make(map[string][]entry)
+
+	containers, err := getContainers()
+	if err != nil {
+		return entries, err
+	}
 
 	for _, container := range containers {
 		category := defaultCategory
@@ -32,12 +36,17 @@ func entries(containers []types.Container) map[string][]entry {
 			entry.Name = strings.TrimPrefix(container.Names[0], "/")
 		}
 
-		// Url
-		if val, ok := container.Labels[fmt.Sprintf("%s.url", prefix)]; ok {
-			entry.Url = val
+		// Protocol
+		if val, ok := container.Labels[fmt.Sprintf("%s.protocol", prefix)]; ok {
+			entry.Protocol = val
+		}
+
+		// Host
+		if val, ok := container.Labels[fmt.Sprintf("%s.host", prefix)]; ok {
+			entry.Host = val
 		}
 
 		entries[category] = append(entries[category], entry)
 	}
-	return entries
+	return entries, nil
 }

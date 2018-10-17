@@ -23,7 +23,7 @@ func initDockerCli() error {
 }
 
 // Get the list of running containers
-func containers() (containers []types.Container, err error) {
+func getContainers() (containers []types.Container, err error) {
 	containers, err = cli.ContainerList(context.Background(), types.ContainerListOptions{
 		All: false,
 	})
