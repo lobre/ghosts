@@ -29,5 +29,11 @@ func hosts() error {
 		}
 	}
 
+	hosts.Add("127.1.1.1", "facebook.com", "twitter.com")
+
+	if err := hosts.Flush(); err != nil {
+		panic(err)
+	}
+
 	return nil
 }
