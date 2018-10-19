@@ -16,7 +16,7 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <header class="navbar bg-gray">
+        <header class="navbar bg-secondary">
             <section class="navbar-section">
             </section>
             <section class="navbar-center">
@@ -31,8 +31,8 @@
                 <div class="columns">
                     <div class="column col-3">
                         <div class="entry entry-title">
-                            <div class="panel bg-primary">
-                                <h5>Title</h5>
+                            <div class="panel bg-gray">
+                                <h5>Salut</h5>
                             </div>
                         </div>
                     </div>
@@ -40,7 +40,10 @@
                         <div class="entry">
                             <div class="panel">
                                 <div class="panel-header text-center">
-                                    <figure class="avatar avatar-xl"><img src="https://picturepan2.github.io/spectre/img/avatar-1.png" alt="Avatar"></figure>
+                                    <figure class="avatar avatar-xl">
+                                        <img src="https://picturepan2.github.io/spectre/img/avatar-2.png" alt="Avatar">
+                                        <!--<img data-name='Traefik' src="" class="initial"/>-->
+                                    </figure>
                                     <div class="panel-title h5 mt-10">Bruce Banner</div>
                                     <div class="panel-subtitle">THE HULK</div>
                                 </div>
@@ -68,5 +71,22 @@
                 <button id="bookmark" class="btn btn-primary">Help</button>
             </div>
         </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdn.rawgit.com/judesfernando/initial.js/master/dist/initial.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('.initial').initial({
+                    charCount: 2,
+                    fontSize: 35,
+                    height: 80,
+                    width: 80,
+                    fontWeight: 500
+                });
+
+                $('img').error(function(){
+                    $(this).remove();
+                });
+            });
+        </script>
     </body>
 </html>

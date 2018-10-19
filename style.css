@@ -31,4 +31,5 @@
 .entry.entry-title .panel{
     align-items: center;
     justify-content: center;
+    border: none;
 }
