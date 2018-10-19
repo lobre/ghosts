@@ -9,6 +9,30 @@
     height: 60px;
 }
 
+.brand .logo {
+    align-items: center;
+    display: inline-flex;
+    display: -ms-inline-flexbox;
+    padding: .2rem;
+    width: auto;
+}
+
+.brand .logo img {
+    display: inline-block;
+    height: auto;
+    width: 2.3rem;
+}
+
+.brand .logo h2 {
+    display: inline-block;
+    font-size: .8rem;
+    font-weight: 700;
+    line-height: 1.5rem;
+    margin-bottom: 0;
+    margin-left: .5rem;
+    margin-right: .5rem;
+}
+
 .footer {
 }
 
@@ -32,4 +56,8 @@
     align-items: center;
     justify-content: center;
     border: none;
+}
+
+.empty .gopher {
+	width: 8rem;
 }
