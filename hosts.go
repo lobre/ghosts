@@ -4,8 +4,6 @@ import (
 	"github.com/lextoumbourou/goodhosts"
 )
 
-const proxyIp = "127.0.0.1"
-
 func hosts() error {
 	hosts, err := goodhosts.NewHosts()
 	if err != nil {

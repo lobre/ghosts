@@ -10,8 +10,6 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-const defaultProxyIP = "127.0.0.1"
-
 type config struct {
 	proxyIP     string
 	hosts       string
@@ -27,7 +25,7 @@ func main() {
 	}
 
 	var conf config
-	flag.StringVar(&conf.proxyIP, "proxy-ip", defaultProxyIP, "Specific proxy IP for hosts entries")
+	flag.StringVar(&conf.proxyIP, "proxy-ip", "127.0.0.1", "Specific proxy IP for hosts entries")
 	flag.StringVar(&conf.hosts, "hosts", "", "Custom location for hosts file")
 	flag.BoolVar(&conf.traefikMode, "traefik-mode", false, "Enable integration with Traefik proxy")
 	flag.BoolVar(&conf.directMode, "direct-mode", false, "Disable proxy and reach containers by theirs IP")

@@ -5,21 +5,19 @@ import (
 	"strings"
 )
 
-const prefix = "ghosts"
-const defaultCategory = "others"
-const noName = "unknown"
+const labelPrefix = "ghosts"
 
 type entry struct {
 	Host  string
 	IP    string
 	Port  string
-	Proto string // TODO
+	Proto string
 
 	Name        string
 	Category    string
 	Description string
-	Logo        string // TODO
-	Auth        string // TODO
+	Logo        string
+	Auth        bool
 
 	Hide   bool
 	Direct bool
@@ -48,45 +46,70 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 			break
 		}
 
-		// Host
-		if val, ok := container.Labels[fmt.Sprintf("%s.host", prefix)]; ok {
-			entry.Host = val
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok {
-			entry.Host = val
-		}
-
-		// Protocol
-		if val, ok := container.Labels[fmt.Sprintf("%s.protocol", prefix)]; ok {
-			entry.Proto = val
-		}
-
 		// Name
-		if val, ok := container.Labels[fmt.Sprintf("%s.name", prefix)]; ok {
+		entry.Name = "unknown"
+		if val, ok := container.Labels[fmt.Sprintf("%s.name", labelPrefix)]; ok {
 			entry.Name = val
 		} else if len(container.Names) > 0 {
 			entry.Name = strings.TrimPrefix(container.Names[0], "/")
-		} else {
-			entry.Name = noName
+		}
+
+		// Host
+		entry.Host = fmt.Sprintf("%s%s", entry.Name, ".dev")
+		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
+			entry.Host = val
+		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && conf.traefikMode {
+			val = strings.TrimPrefix(val, "Host:")
+			array := strings.Split(val, ",")
+			if len(array) > 0 {
+				entry.Host = array[0]
+			}
+		}
+
+		// Protocol
+		entry.Proto = "http"
+		if val, ok := container.Labels[fmt.Sprintf("%s.proto", labelPrefix)]; ok {
+			entry.Proto = val
+		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && conf.traefikMode {
+			array := strings.Split(val, ",")
+			if len(array) > 0 {
+				entry.Proto = array[0]
+			}
+		}
+
+		// Auth
+		entry.Auth = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.auth", labelPrefix)]; ok && val == "true" {
+			entry.Auth = true
+		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && conf.traefikMode {
+			entry.Auth = true
 		}
 
 		// Category
-		category := defaultCategory
-		if val, ok := container.Labels[fmt.Sprintf("%s.category", prefix)]; ok {
+		category := "others"
+		if val, ok := container.Labels[fmt.Sprintf("%s.category", labelPrefix)]; ok {
 			category = val
 		}
 
+		// Logo
+		if val, ok := container.Labels[fmt.Sprintf("%s.logo", labelPrefix)]; ok {
+			entry.Logo = val
+		}
+
 		// Description
-		if val, ok := container.Labels[fmt.Sprintf("%s.description", prefix)]; ok {
+		if val, ok := container.Labels[fmt.Sprintf("%s.description", labelPrefix)]; ok {
 			entry.Description = val
 		}
 
 		// Hide
-		if val, ok := container.Labels[fmt.Sprintf("%s.hide", prefix)]; ok && val == "true" {
+		entry.Hide = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.hide", labelPrefix)]; ok && val == "true" {
 			entry.Hide = true
 		}
 
 		// Direct
-		if val, ok := container.Labels[fmt.Sprintf("%s.direct", prefix)]; ok && val == "true" {
+		entry.Direct = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.direct", labelPrefix)]; ok && val == "true" {
 			entry.Direct = true
 		}
 
