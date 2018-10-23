@@ -19,8 +19,9 @@ type entry struct {
 	Logo        string
 	Auth        bool
 
-	Hide   bool
-	Direct bool
+	Hide    bool
+	OnlyWeb bool
+	Direct  bool
 }
 
 func getEntries(cli cli, conf config) (map[string][]entry, error) {
@@ -33,6 +34,11 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 
 	for _, container := range containers {
 		entry := entry{}
+
+		// Check if enabled
+		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; !ok || val != "true" {
+			continue
+		}
 
 		// Take the IP of the first network
 		for _, n := range container.NetworkSettings.Networks {
@@ -105,6 +111,12 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 		entry.Hide = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.hide", labelPrefix)]; ok && val == "true" {
 			entry.Hide = true
+		}
+
+		// Only web
+		entry.OnlyWeb = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.onlyweb", labelPrefix)]; ok && val == "true" {
+			entry.OnlyWeb = true
 		}
 
 		// Direct
