@@ -34,7 +34,7 @@ func newDockerCli() (cli, error) {
 // Get the list of running containers
 func (cli cli) getContainers() (containers []types.Container, err error) {
 	containers, err = cli.ContainerList(context.Background(), types.ContainerListOptions{
-		All: true,
+		All: false,
 	})
 	if err != nil {
 		return nil, err

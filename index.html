@@ -1,17 +1,17 @@
 <html>
     <h1>List of containers</h1>
-    {{ range $category, $entries := . }}
-    <h2>{{ $category | capitalize }}</h2>
-    <ul>
-        {{ if not $entries }}
-        No containers
-        {{ else }}
-            {{range $entries }}
-            {{ if .Name }}<li>{{ .Name }}</li>{{ end }}
-            {{ if .Protocol }}<li>{{ .Protocol }}</li>{{ end }}
-            {{ if .Host }}<li>{{ .Host }}</li>{{ end }}
-            {{ end }}
+    {{ range $category, $entries := .Entries }}
+        {{ if or (gt (len $.Entries) 1) (ne $category $.DefaultCategory) }}
+        <h2>{{ $category | capitalize }}</h2>
         {{ end }}
-    </ul>
+        {{range $entries }}
+        <ul>
+            {{ if .Name }}<li>{{ .Name }}</li>{{ end }}
+            {{ if .Proto }}<li>{{ .Proto }}</li>{{ end }}
+            {{ if .Host }}<li>{{ .Host }}</li>{{ end }}
+        </ul>
+        {{ end }}
+    {{ else }}
+        No container
     {{ end }}
 </html>

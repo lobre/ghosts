@@ -5,7 +5,8 @@ import (
 	"strings"
 )
 
-const labelPrefix = "ghosts"
+const labelPrefix string = "ghosts"
+const defaultCategory string = "others"
 
 type entry struct {
 	Host  string
@@ -24,8 +25,8 @@ type entry struct {
 	Direct  bool
 }
 
-func getEntries(cli cli, conf config) (map[string][]entry, error) {
-	entries := make(map[string][]entry)
+func getEntries(cli cli, conf config) ([]entry, error) {
+	var entries []entry
 
 	containers, err := cli.getContainers()
 	if err != nil {
@@ -36,7 +37,9 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 		entry := entry{}
 
 		// Check if enabled
-		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; !ok || val != "true" {
+		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; ok && val != "true" {
+			continue
+		} else if !ok && !conf.autoEnabled {
 			continue
 		}
 
@@ -92,9 +95,9 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 		}
 
 		// Category
-		category := "others"
+		entry.Category = defaultCategory
 		if val, ok := container.Labels[fmt.Sprintf("%s.category", labelPrefix)]; ok {
-			category = val
+			entry.Category = strings.ToLower(val)
 		}
 
 		// Logo
@@ -125,7 +128,7 @@ func getEntries(cli cli, conf config) (map[string][]entry, error) {
 			entry.Direct = true
 		}
 
-		entries[strings.ToLower(category)] = append(entries[category], entry)
+		entries = append(entries, entry)
 	}
 	return entries, nil
 }
