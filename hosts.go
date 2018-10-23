@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/lextoumbourou/goodhosts"
 )
 
@@ -14,20 +12,20 @@ func hosts() error {
 		return err
 	}
 
-	entriesMap, err := entries()
-	if err != nil {
-		return nil
-	}
+	// entriesMap, err := getEntries(nil, nil)
+	// if err != nil {
+	// 	return nil
+	// }
 
-	for _, entries := range entriesMap {
-		for _, entry := range entries {
-			if hosts.Has(proxyIp, entry.Host) {
-				fmt.Println("Entry exists")
-			} else {
-				fmt.Println("Entry does not exist")
-			}
-		}
-	}
+	// for _, entries := range entriesMap {
+	// 	for _, entry := range entries {
+	// 		if hosts.Has(proxyIp, entry.Host) {
+	// 			fmt.Println("Entry exists")
+	// 		} else {
+	// 			fmt.Println("Entry does not exist")
+	// 		}
+	// 	}
+	// }
 
 	hosts.Add("127.1.1.1", "facebook.com", "twitter.com")
 

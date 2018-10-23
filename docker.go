@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -9,29 +13,37 @@ import (
 	"github.com/docker/docker/client"
 )
 
-var cli *client.Client
+type cli struct {
+	*client.Client
+}
 
 // Init docker cli
-func initDockerCli() error {
-	var err error
-
-	cli, err = client.NewClientWithOpts(client.WithVersion("1.38"))
+func newDockerCli() (cli, error) {
+	err := setDockerApiVersion()
 	if err != nil {
-		return err
+		return cli{}, err
 	}
-	return nil
+
+	dockerCli, err := client.NewEnvClient()
+	if err != nil {
+		return cli{}, err
+	}
+	return cli{dockerCli}, nil
 }
 
 // Get the list of running containers
-func getContainers() (containers []types.Container, err error) {
+func (cli cli) getContainers() (containers []types.Container, err error) {
 	containers, err = cli.ContainerList(context.Background(), types.ContainerListOptions{
-		All: false,
+		All: true,
 	})
-	return
+	if err != nil {
+		return nil, err
+	}
+	return containers, nil
 }
 
 // Listen for docker events
-func listenContainers() (<-chan events.Message, <-chan error) {
+func (cli cli) listenContainers() (<-chan events.Message, <-chan error) {
 	filter := filters.NewArgs()
 	filter.Add("type", "container")
 	filter.Add("event", "start")
@@ -40,4 +52,18 @@ func listenContainers() (<-chan events.Message, <-chan error) {
 	return cli.Events(context.Background(), types.EventsOptions{
 		Filters: filter,
 	})
+}
+
+func setDockerApiVersion() error {
+	cmd := exec.Command("docker", "version", "--format", "{{.Server.APIVersion}}")
+	cmdOutput := &bytes.Buffer{}
+	cmd.Stdout = cmdOutput
+
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	apiVersion := strings.TrimSpace(string(cmdOutput.Bytes()))
+	os.Setenv("DOCKER_API_VERSION", apiVersion)
+	return nil
 }
