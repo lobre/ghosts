@@ -13,27 +13,27 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type cli struct {
+type docker struct {
 	*client.Client
 }
 
 // Init docker cli
-func newDockerCli() (cli, error) {
+func newDockerCli() (docker, error) {
 	err := setDockerApiVersion()
 	if err != nil {
-		return cli{}, err
+		return docker{}, err
 	}
 
 	dockerCli, err := client.NewEnvClient()
 	if err != nil {
-		return cli{}, err
+		return docker{}, err
 	}
-	return cli{dockerCli}, nil
+	return docker{dockerCli}, nil
 }
 
 // Get the list of running containers
-func (cli cli) getContainers() (containers []types.Container, err error) {
-	containers, err = cli.ContainerList(context.Background(), types.ContainerListOptions{
+func (docker docker) getContainers() (containers []types.Container, err error) {
+	containers, err = docker.ContainerList(context.Background(), types.ContainerListOptions{
 		All: false,
 	})
 	if err != nil {
@@ -43,13 +43,13 @@ func (cli cli) getContainers() (containers []types.Container, err error) {
 }
 
 // Listen for docker events
-func (cli cli) listenContainers() (<-chan events.Message, <-chan error) {
+func (docker docker) listenContainers() (<-chan events.Message, <-chan error) {
 	filter := filters.NewArgs()
 	filter.Add("type", "container")
 	filter.Add("event", "start")
 	filter.Add("event", "die")
 
-	return cli.Events(context.Background(), types.EventsOptions{
+	return docker.Events(context.Background(), types.EventsOptions{
 		Filters: filter,
 	})
 }

@@ -4,38 +4,40 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 type frontEntries map[string][]entry
 
 type appHandler struct {
-	conf config
-	cli  cli
+	config config
+	docker docker
 }
 
 func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.New("index.html").Funcs(template.FuncMap{
-		"capitalize": capitalize,
+		"capitalize": strings.Title,
+		"upper":      strings.ToUpper,
 	}).ParseFiles("index.html")
 
-	entries, err := getEntries(h.cli, h.conf)
+	entries, err := getEntries(h.docker, h.config)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	spew.Dump(entries)
 
 	err = tmpl.Execute(w, struct {
+		Config  config
 		Entries frontEntries
 	}{
+		h.config,
 		prepare(entries),
 	})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func capitalize(s string) string {
-	return strings.Title(s)
 }
 
 // Separate entries by categories

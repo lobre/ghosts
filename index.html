@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
         <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
 
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+
         <link rel="stylesheet" href="static/style.css">
     </head>
     <body>
@@ -49,17 +51,26 @@
                                         <div class="panel">
                                             <div class="panel-header text-center">
                                                 <figure class="avatar avatar-xl">
-                                                    <img src="https://picturepan2.github.io/spectre/img/avatar-2.png" alt="Avatar">
-                                                    <!--<img data-name='Traefik' src="" class="initial"/>-->
+                                                    {{ if .Logo }}
+                                                        <img class="bg-gray" src="{{ .Logo }}" alt="{{ .Name }}">
+                                                    {{ else }}
+                                                        <img data-name="{{ .Name }}" alt="{{ .Name }}" class="initial"/>
+                                                    {{ end }}
                                                 </figure>
-                                                <div class="panel-title h5 mt-10">{{ .Name }}</div>
-                                                <div class="panel-subtitle">THE HULK</div>
-                                            </div>
-                                            <div class="panel-body">
-                                                <p class="text-center">Hello frindes, triynirst sretius teinua tenirus teniraut ersiuat r This is the description of my container and it is super interesting</p>
-                                            </div>
-                                            <div class="panel-footer">
-                                                <button class="btn btn-primary btn-block">Open</button>
+                                                <div class="panel-subtitle">
+                                                    {{ if .Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Name | upper }}
+                                                </div>
+                                                <div class="popover popover-top">
+                                                    <a href="{{ .URL $.Config }}" target="_blank" class="btn btn-primary">Open</a>
+
+                                                    {{ if .Description }}
+                                                    <div class="popover-container">
+                                                        <div class="card">
+                                                            <div class="card-header">{{ .Description }}</div>
+                                                        </div>
+                                                    </div>
+                                                    {{ end }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

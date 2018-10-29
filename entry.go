@@ -25,10 +25,10 @@ type entry struct {
 	Direct  bool
 }
 
-func getEntries(cli cli, conf config) ([]entry, error) {
+func getEntries(docker docker, config config) ([]entry, error) {
 	var entries []entry
 
-	containers, err := cli.getContainers()
+	containers, err := docker.getContainers()
 	if err != nil {
 		return entries, err
 	}
@@ -39,7 +39,7 @@ func getEntries(cli cli, conf config) ([]entry, error) {
 		// Check if enabled
 		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; ok && val != "true" {
 			continue
-		} else if !ok && !conf.autoEnabled {
+		} else if !ok && !config.autoEnabled {
 			continue
 		}
 
@@ -67,7 +67,7 @@ func getEntries(cli cli, conf config) ([]entry, error) {
 		entry.Host = fmt.Sprintf("%s%s", entry.Name, ".dev")
 		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
 			entry.Host = val
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && conf.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.traefikMode {
 			val = strings.TrimPrefix(val, "Host:")
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
@@ -79,7 +79,7 @@ func getEntries(cli cli, conf config) ([]entry, error) {
 		entry.Proto = "http"
 		if val, ok := container.Labels[fmt.Sprintf("%s.proto", labelPrefix)]; ok {
 			entry.Proto = val
-		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && conf.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && config.traefikMode {
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
 				entry.Proto = array[0]
@@ -90,7 +90,7 @@ func getEntries(cli cli, conf config) ([]entry, error) {
 		entry.Auth = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.auth", labelPrefix)]; ok && val == "true" {
 			entry.Auth = true
-		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && conf.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && config.traefikMode {
 			entry.Auth = true
 		}
 
@@ -131,4 +131,16 @@ func getEntries(cli cli, conf config) ([]entry, error) {
 		entries = append(entries, entry)
 	}
 	return entries, nil
+}
+
+func (e entry) URL(config config) string {
+	var host, port string
+	if config.directMode || e.Direct {
+		host = e.IP
+		port = e.Port
+	} else {
+		host = e.Host
+		port = "80"
+	}
+	return fmt.Sprintf("%s://%s:%s", e.Proto, host, port)
 }
