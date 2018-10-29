@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"log"
 	"net/http"
 	"os"
 )
@@ -38,5 +39,6 @@ func main() {
 
 	// Start web server
 	http.Handle("/", &appHandler{conf, cli})
-	http.ListenAndServe(conf.addr, nil)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+	log.Fatal(http.ListenAndServe(conf.addr, nil))
 }

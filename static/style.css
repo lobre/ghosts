@@ -45,6 +45,12 @@
     height: 262px;
 }
 
+.entry .panel .panel-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .entry .panel .panel-body {
     overflow: hidden;
     display: -webkit-box;
@@ -52,7 +58,13 @@
     -webkit-box-orient: vertical;
 }
 
-.entry.entry-title .panel{
+.category {
+    height: 100%;
+    padding: .5rem;
+}
+
+.category .panel{
+    height: 100%;
     align-items: center;
     justify-content: center;
     border: none;

@@ -4,11 +4,9 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
-type frontEntries map[string][][]entry
+type frontEntries map[string][]entry
 
 type appHandler struct {
 	conf config
@@ -24,14 +22,11 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	spew.Dump(entries)
 
 	err = tmpl.Execute(w, struct {
-		DefaultCategory string
-		Entries         frontEntries
+		Entries frontEntries
 	}{
-		defaultCategory,
-		paginate(entries),
+		prepare(entries),
 	})
 
 	if err != nil {
@@ -43,7 +38,11 @@ func capitalize(s string) string {
 	return strings.Title(s)
 }
 
-// TODO
-func paginate([]entry) frontEntries {
-	return nil
+// Separate entries by categories
+func prepare(entries []entry) frontEntries {
+	categories := make(frontEntries)
+	for _, entry := range entries {
+		categories[entry.Category] = append(categories[entry.Category], entry)
+	}
+	return categories
 }

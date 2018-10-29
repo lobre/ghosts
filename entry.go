@@ -6,7 +6,7 @@ import (
 )
 
 const labelPrefix string = "ghosts"
-const defaultCategory string = "others"
+const defaultCategory string = "apps"
 
 type entry struct {
 	Host  string
