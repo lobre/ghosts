@@ -135,7 +135,7 @@ func getEntries(docker docker, config config) ([]entry, error) {
 
 func (e entry) URL(config config) string {
 	var host, port string
-	if config.directMode || e.Direct {
+	if (config.onlyWeb || e.OnlyWeb) && (config.directMode || e.Direct) {
 		host = e.IP
 		port = e.Port
 	} else {

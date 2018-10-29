@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -58,10 +59,12 @@ func setDockerApiVersion() error {
 	cmd := exec.Command("docker", "version", "--format", "{{.Server.APIVersion}}")
 	cmdOutput := &bytes.Buffer{}
 	cmd.Stdout = cmdOutput
+	cmdErr := &bytes.Buffer{}
+	cmd.Stderr = cmdErr
 
 	err := cmd.Run()
 	if err != nil {
-		return err
+		return fmt.Errorf(cmdErr.String())
 	}
 	apiVersion := strings.TrimSpace(string(cmdOutput.Bytes()))
 	os.Setenv("DOCKER_API_VERSION", apiVersion)

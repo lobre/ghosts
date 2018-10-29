@@ -1,34 +1,83 @@
 package main
 
 import (
+	"bufio"
+	"io/ioutil"
+	"os"
+	"strings"
+
 	"github.com/lextoumbourou/goodhosts"
 )
 
-func hosts() error {
+func hosts(docker docker, config config) error {
+	if config.onlyWeb {
+		return nil
+	}
+
+	entries, err := getEntries(docker, config)
+	if err != nil {
+		return err
+	}
+
+	if err := cleanEntries(entries); err != nil {
+		return err
+	}
+
 	hosts, err := goodhosts.NewHosts()
 	if err != nil {
 		return err
 	}
 
-	// entriesMap, err := getEntries(nil, nil)
-	// if err != nil {
-	// 	return nil
-	// }
+	for _, entry := range entries {
+		if entry.OnlyWeb {
+			continue
+		}
 
-	// for _, entries := range entriesMap {
-	// 	for _, entry := range entries {
-	// 		if hosts.Has(proxyIp, entry.Host) {
-	// 			fmt.Println("Entry exists")
-	// 		} else {
-	// 			fmt.Println("Entry does not exist")
-	// 		}
-	// 	}
-	// }
-
-	hosts.Add("127.1.1.1", "facebook.com", "twitter.com")
+		if (config.directMode || entry.Direct) && !hosts.Has(entry.IP, entry.Host) {
+			hosts.Add(entry.IP, entry.Host)
+		} else if !hosts.Has(config.proxyIP, entry.Host) {
+			hosts.Add(config.proxyIP, entry.Host)
+		}
+	}
 
 	if err := hosts.Flush(); err != nil {
-		panic(err)
+		return err
+	}
+
+	return nil
+}
+
+func cleanEntries(entries []entry) error {
+	hosts, err := goodhosts.NewHosts()
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Open(hosts.Path)
+	if err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(f)
+	lines := []string{}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		keep := true
+		for _, entry := range entries {
+			if strings.Contains(line, entry.Host) {
+				keep = false
+				break
+			}
+		}
+		if keep {
+			lines = append(lines, line)
+		}
+	}
+
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(hosts.Path, []byte(output), 0644)
+	if err != nil {
+		return err
 	}
 
 	return nil

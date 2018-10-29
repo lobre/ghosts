@@ -18,27 +18,32 @@ type config struct {
 }
 
 func main() {
-	cli, err := newDockerCli()
+	docker, err := newDockerCli()
 	if err != nil {
 		panic(err)
 	}
 
-	var conf config
-	flag.StringVar(&conf.addr, "addr", ":8080", "Web app address and port")
-	flag.StringVar(&conf.proxyIP, "proxy-ip", "127.0.0.1", "Specific proxy IP for hosts entries")
-	flag.StringVar(&conf.hosts, "hosts", "", "Custom location for hosts file")
-	flag.BoolVar(&conf.autoEnabled, "auto-enabled", true, "Automatically enable new containers without the enabled label")
-	flag.BoolVar(&conf.traefikMode, "traefik-mode", false, "Enable integration with Traefik proxy")
-	flag.BoolVar(&conf.directMode, "direct-mode", false, "Disable proxy and reach containers by theirs IP")
-	flag.BoolVar(&conf.onlyWeb, "only-web", false, "Don't generate hosts file")
+	var config config
+	flag.StringVar(&config.addr, "addr", ":8080", "Web app address and port")
+	flag.StringVar(&config.proxyIP, "proxy-ip", "127.0.0.1", "Specific proxy IP for hosts entries")
+	flag.StringVar(&config.hosts, "hosts", "", "Custom location for hosts file")
+	flag.BoolVar(&config.autoEnabled, "auto-enabled", true, "Automatically enable new containers without the enabled label")
+	flag.BoolVar(&config.traefikMode, "traefik-mode", false, "Enable integration with Traefik proxy")
+	flag.BoolVar(&config.directMode, "direct-mode", false, "Disable proxy and reach containers by theirs IP")
+	flag.BoolVar(&config.onlyWeb, "only-web", false, "Don't generate hosts file")
 	flag.Parse()
 
-	if conf.hosts != "" {
-		os.Setenv("HOSTS_PATH", conf.hosts)
+	if config.hosts != "" {
+		os.Setenv("HOSTS_PATH", config.hosts)
+	}
+
+	// Init hosts file
+	if err := hosts(docker, config); err != nil {
+		panic(err)
 	}
 
 	// Start web server
-	http.Handle("/", &appHandler{conf, cli})
+	http.Handle("/", &appHandler{config, docker})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-	log.Fatal(http.ListenAndServe(conf.addr, nil))
+	log.Fatal(http.ListenAndServe(config.addr, nil))
 }

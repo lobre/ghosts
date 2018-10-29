@@ -1,1 +1,4 @@
 127.1.1.1 facebook.com twitter.com
+172.18.0.3 core_home.dev
+172.23.0.2 core_traefik.dev
+172.18.0.2 core_portainer.dev

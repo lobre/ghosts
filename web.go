@@ -44,7 +44,9 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func prepare(entries []entry) frontEntries {
 	categories := make(frontEntries)
 	for _, entry := range entries {
-		categories[entry.Category] = append(categories[entry.Category], entry)
+		if !entry.Hide {
+			categories[entry.Category] = append(categories[entry.Category], entry)
+		}
 	}
 	return categories
 }
