@@ -48,10 +48,6 @@ func (docker docker) listenContainers() (<-chan events.Message, <-chan error) {
 	filter := filters.NewArgs()
 	filter.Add("type", "container")
 	filter.Add("event", "start")
-	filter.Add("event", "destroy")
-	filter.Add("event", "stop")
-
-	// Listen to die to do the cleanup
 	filter.Add("event", "die")
 
 	return docker.Events(context.Background(), types.EventsOptions{

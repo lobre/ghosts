@@ -21,6 +21,8 @@ func hosts(docker docker, config config) error {
 	for {
 		select {
 		case msg := <-msgCh:
+			id := msg.ID
+			action := msg.Action
 			spew.Dump(msg)
 			if err := generateHosts(docker, config); err != nil {
 				return err
