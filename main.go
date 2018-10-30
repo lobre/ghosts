@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 )
 
 type config struct {
@@ -37,13 +38,25 @@ func main() {
 		os.Setenv("HOSTS_PATH", config.hosts)
 	}
 
-	// Init hosts file
-	if err := hosts(docker, config); err != nil {
-		panic(err)
-	}
+	var wg sync.WaitGroup
 
-	// Start web server
-	http.Handle("/", &appHandler{config, docker})
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-	log.Fatal(http.ListenAndServe(config.addr, nil))
+	// Hosts
+	wg.Add(1)
+	go func() {
+		if err := hosts(docker, config); err != nil {
+			log.Fatal(err)
+		}
+		wg.Done()
+	}()
+
+	// Web
+	wg.Add(1)
+	go func() {
+		http.Handle("/", &appHandler{config, docker})
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+		log.Fatal(http.ListenAndServe(config.addr, nil))
+		wg.Done()
+	}()
+
+	wg.Wait()
 }

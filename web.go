@@ -4,8 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 type frontEntries map[string][]entry
@@ -25,7 +23,6 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	spew.Dump(entries)
 
 	err = tmpl.Execute(w, struct {
 		Config  config

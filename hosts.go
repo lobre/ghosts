@@ -6,10 +6,32 @@ import (
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/lextoumbourou/goodhosts"
 )
 
 func hosts(docker docker, config config) error {
+	// Initialize hosts
+	if err := generateHosts(docker, config); err != nil {
+		return err
+	}
+
+	// Listen to Docker events
+	msgCh, errCh := docker.listenContainers()
+	for {
+		select {
+		case msg := <-msgCh:
+			spew.Dump(msg)
+			if err := generateHosts(docker, config); err != nil {
+				return err
+			}
+		case err := <-errCh:
+			return err
+		}
+	}
+}
+
+func generateHosts(docker docker, config config) error {
 	if config.onlyWeb {
 		return nil
 	}
@@ -18,6 +40,7 @@ func hosts(docker docker, config config) error {
 	if err != nil {
 		return err
 	}
+	spew.Dump(entries)
 
 	if err := cleanEntries(entries); err != nil {
 		return err
