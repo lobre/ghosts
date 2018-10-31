@@ -45,7 +45,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		// Host
 		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
 			entry.Host = val
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.TraefikMode {
 			val = strings.TrimPrefix(val, "Host:")
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
@@ -84,7 +84,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry.Proto = "http"
 		if val, ok := container.Labels[fmt.Sprintf("%s.proto", labelPrefix)]; ok {
 			entry.Proto = val
-		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && config.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && config.TraefikMode {
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
 				entry.Proto = array[0]
@@ -95,7 +95,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry.Auth = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.auth", labelPrefix)]; ok && val == "true" {
 			entry.Auth = true
-		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && config.traefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && config.TraefikMode {
 			entry.Auth = true
 		}
 
@@ -147,11 +147,11 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 func (e entry) URL(config config) string {
 	var host, port string
 
-	if e.Direct || e.WebDirect || (!config.proxyMode && !config.traefikMode) {
+	if e.Direct || e.WebDirect || (!config.ProxyMode && !config.TraefikMode) {
 		// Direct mode
 
 		// Use container IP if hosts are not generated and in direct mode
-		if e.WebDirect || config.noHosts || e.NoHosts {
+		if e.WebDirect || config.NoHosts || e.NoHosts {
 			host = e.IP
 			port = e.Port
 		} else {
