@@ -37,11 +37,6 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 	for _, container := range containers {
 		entry := entry{}
 
-		// Check if enabled
-		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; ok && val != "true" {
-			continue
-		}
-
 		// Host
 		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
 			entry.Host = val
