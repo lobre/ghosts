@@ -1,12 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"io/ioutil"
-	"os"
-	"strings"
-
-	"github.com/davecgh/go-spew/spew"
 	"github.com/lextoumbourou/goodhosts"
 )
 
@@ -21,11 +15,15 @@ func hosts(docker docker, config config) error {
 	for {
 		select {
 		case msg := <-msgCh:
-			id := msg.ID
-			action := msg.Action
-			spew.Dump(msg)
-			if err := generateHosts(docker, config); err != nil {
-				return err
+			switch msg.Action {
+			case "die":
+				if err := cleanHosts(docker, config, msg.ID); err != nil {
+					return err
+				}
+			case "start":
+				if err := generateHosts(docker, config, msg.ID); err != nil {
+					return err
+				}
 			}
 		case err := <-errCh:
 			return err
@@ -33,18 +31,13 @@ func hosts(docker docker, config config) error {
 	}
 }
 
-func generateHosts(docker docker, config config) error {
+func generateHosts(docker docker, config config, ids ...string) error {
 	if config.onlyWeb {
 		return nil
 	}
 
-	entries, err := getEntries(docker, config)
+	entries, err := getEntries(docker, config, ids...)
 	if err != nil {
-		return err
-	}
-	spew.Dump(entries)
-
-	if err := cleanEntries(entries); err != nil {
 		return err
 	}
 
@@ -72,36 +65,34 @@ func generateHosts(docker docker, config config) error {
 	return nil
 }
 
-func cleanEntries(entries []entry) error {
+func cleanHosts(docker docker, config config, ids ...string) error {
+	if config.onlyWeb {
+		return nil
+	}
+
+	entries, err := getEntries(docker, config, ids...)
+	if err != nil {
+		return err
+	}
+
 	hosts, err := goodhosts.NewHosts()
 	if err != nil {
 		return err
 	}
 
-	f, err := os.Open(hosts.Path)
-	if err != nil {
-		return err
-	}
-	scanner := bufio.NewScanner(f)
-	lines := []string{}
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		keep := true
-		for _, entry := range entries {
-			if strings.Contains(line, entry.Host) {
-				keep = false
-				break
-			}
+	for _, entry := range entries {
+		if entry.OnlyWeb {
+			continue
 		}
-		if keep {
-			lines = append(lines, line)
+
+		if (config.directMode || entry.Direct) && hosts.Has(entry.IP, entry.Host) {
+			hosts.Remove(entry.IP, entry.Host)
+		} else if hosts.Has(config.proxyIP, entry.Host) {
+			hosts.Remove(config.proxyIP, entry.Host)
 		}
 	}
 
-	output := strings.Join(lines, "\n")
-	err = ioutil.WriteFile(hosts.Path, []byte(output), 0644)
-	if err != nil {
+	if err := hosts.Flush(); err != nil {
 		return err
 	}
 

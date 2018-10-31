@@ -33,9 +33,15 @@ func newDockerCli() (docker, error) {
 }
 
 // Get the list of running containers
-func (docker docker) getContainers() (containers []types.Container, err error) {
+func (docker docker) getContainers(ids ...string) (containers []types.Container, err error) {
+	filter := filters.NewArgs()
+	for _, id := range ids {
+		filter.Add("id", id)
+	}
+
 	containers, err = docker.ContainerList(context.Background(), types.ContainerListOptions{
-		All: false,
+		All:     false,
+		Filters: filter,
 	})
 	if err != nil {
 		return nil, err

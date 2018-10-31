@@ -25,10 +25,10 @@ type entry struct {
 	Direct  bool
 }
 
-func getEntries(docker docker, config config) ([]entry, error) {
+func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 	var entries []entry
 
-	containers, err := docker.getContainers()
+	containers, err := docker.getContainers(ids...)
 	if err != nil {
 		return entries, err
 	}

@@ -1,5 +1,3 @@
-127.1.1.1 facebook.com twitter.com
-172.17.0.2 test2.dev
-172.18.0.3 core_home.dev
-172.23.0.2 core_traefik.dev
-172.18.0.2 core_portainer.dev
+
+172.21.0.3 python.dev
+172.17.0.2 coucou.dev
