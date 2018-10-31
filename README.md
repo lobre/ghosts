@@ -38,6 +38,14 @@ To start the server, use the following command.
 
     docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts
 
+## Modes
+
+Ghosts has three different modes.
+
+ - Direct mode (default): containers IP will be used directly for matching with host.
+ - Proxy mode: all containers hosts will be redirected to the proxy IP (can be defined using the binary parameter `-proxyIP`).
+ - Traefik mode: Same as proxy mode but this will allow using traefik labels to generate hosts.
+
 ## Binary parameters
 
     Usage of ./ghosts:
