@@ -20,9 +20,10 @@ type entry struct {
 	Logo        string
 	Auth        bool
 
-	Hide    bool
-	OnlyWeb bool
-	Direct  bool
+	NoWeb     bool
+	NoHosts   bool
+	Direct    bool
+	WebDirect bool
 }
 
 func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
@@ -39,7 +40,18 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		// Check if enabled
 		if val, ok := container.Labels[fmt.Sprintf("%s.enabled", labelPrefix)]; ok && val != "true" {
 			continue
-		} else if !ok && !config.autoEnabled {
+		}
+
+		// Host
+		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
+			entry.Host = val
+		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.traefikMode {
+			val = strings.TrimPrefix(val, "Host:")
+			array := strings.Split(val, ",")
+			if len(array) > 0 {
+				entry.Host = array[0]
+			}
+		} else {
 			continue
 		}
 
@@ -49,10 +61,15 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 			break
 		}
 
-		// Take the first port exposed
-		for _, p := range container.Ports {
-			entry.Port = fmt.Sprint(p.PrivatePort)
-			break
+		// Port
+		if val, ok := container.Labels[fmt.Sprintf("%s.port", labelPrefix)]; ok {
+			entry.Port = val
+		} else {
+			// Take the first port exposed
+			for _, p := range container.Ports {
+				entry.Port = fmt.Sprint(p.PrivatePort)
+				break
+			}
 		}
 
 		// Name
@@ -61,18 +78,6 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 			entry.Name = val
 		} else if len(container.Names) > 0 {
 			entry.Name = strings.TrimPrefix(container.Names[0], "/")
-		}
-
-		// Host
-		entry.Host = fmt.Sprintf("%s%s", entry.Name, ".dev")
-		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
-			entry.Host = val
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.traefikMode {
-			val = strings.TrimPrefix(val, "Host:")
-			array := strings.Split(val, ",")
-			if len(array) > 0 {
-				entry.Host = array[0]
-			}
 		}
 
 		// Protocol
@@ -110,22 +115,28 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 			entry.Description = val
 		}
 
-		// Hide
-		entry.Hide = false
-		if val, ok := container.Labels[fmt.Sprintf("%s.hide", labelPrefix)]; ok && val == "true" {
-			entry.Hide = true
+		// No Web
+		entry.NoWeb = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.noweb", labelPrefix)]; ok && val == "true" {
+			entry.NoWeb = true
 		}
 
-		// Only web
-		entry.OnlyWeb = false
-		if val, ok := container.Labels[fmt.Sprintf("%s.onlyweb", labelPrefix)]; ok && val == "true" {
-			entry.OnlyWeb = true
+		// No Hosts
+		entry.NoHosts = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.nohosts", labelPrefix)]; ok && val == "true" {
+			entry.NoHosts = true
 		}
 
 		// Direct
 		entry.Direct = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.direct", labelPrefix)]; ok && val == "true" {
 			entry.Direct = true
+		}
+
+		// Web Direct
+		entry.WebDirect = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.webdirect", labelPrefix)]; ok && val == "true" {
+			entry.WebDirect = true
 		}
 
 		entries = append(entries, entry)
@@ -135,12 +146,30 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 
 func (e entry) URL(config config) string {
 	var host, port string
-	if (config.onlyWeb || e.OnlyWeb) && (config.directMode || e.Direct) {
-		host = e.IP
-		port = e.Port
+
+	if e.Direct || e.WebDirect || (!config.proxyMode && !config.traefikMode) {
+		// Direct mode
+
+		// Use container IP if hosts are not generated and in direct mode
+		if e.WebDirect || config.noHosts || e.NoHosts {
+			host = e.IP
+			port = e.Port
+		} else {
+			host = e.Host
+			port = e.Port
+		}
 	} else {
-		host = e.Host
-		port = "80"
+		// Proxy mode
+
+		if e.Proto == "http" {
+			host = e.Host
+			port = "80"
+		} else {
+			host = e.Host
+			port = "443"
+		}
+
 	}
+
 	return fmt.Sprintf("%s://%s:%s", e.Proto, host, port)
 }
