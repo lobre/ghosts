@@ -9,9 +9,9 @@
 
         <link rel="shortcut icon" href="static/favicon.ico" type="image/x-icon"><Paste>
 
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
-        <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+        <link rel="stylesheet" href="static/spectre.min.css">
+        <link rel="stylesheet" href="static/spectre-exp.min.css">
+        <link rel="stylesheet" href="static/spectre-icons.min.css">
 
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
 
@@ -86,14 +86,20 @@
         </div>
         <div class="empty">
 			<img class="gopher" src="static/logo.png" alt="Ghosts">
-            <p class="empty-title h5">The page you are looking for does not appear here?</p>
-            <p class="empty-subtitle">Click the button to open the help page.</p>
-            <div class="empty-action">
-                <a href="{{ $.Config.Help }}" target="_blank" id="bookmark" class="btn btn-primary">Help</a>
-            </div>
+            <blockquote>
+                <i class="fas fa-quote-left"></i> <cite>I am the ghost boo-ster!</cite> 
+            </blockquote>
+
+            {{ if not $.Config.NoHelp }}
+                <p class="empty-title h5">The page you are looking for does not appear here?</p>
+                <p class="empty-subtitle">Click the button to open the help page.</p>
+                <div class="empty-action">
+                    <a href="{{ $.Config.Help }}" target="_blank" id="bookmark" class="btn btn-primary">Help</a>
+                </div>
+            {{ end }}
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdn.rawgit.com/judesfernando/initial.js/master/dist/initial.min.js"></script>
+        <script src="static/jquery-3.3.1.min.js"></script>
+        <script src="static/initial.min.js"></script>
         <script>
             $(document).ready(function() {
                 $('.initial').initial({
@@ -102,10 +108,6 @@
                     height: 80,
                     width: 80,
                     fontWeight: 500
-                });
-
-                $('img').error(function(){
-                    $(this).remove();
                 });
             });
         </script>

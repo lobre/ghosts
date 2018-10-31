@@ -78,6 +78,11 @@
 	width: 8rem;
 }
 
+.empty blockquote {
+    width: 260px;
+    margin: 20px auto;
+}
+
 .avatar {
     background: none;
 }

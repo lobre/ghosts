@@ -1,42 +1,39 @@
 # Ghosts
 
-![alt text](https://raw.githubusercontent.com/lobre/ghosts/master/img/logo.png)
+![logo](https://raw.githubusercontent.com/lobre/ghosts/master/static/logo.png)
 
-Helper web interface for hosts declared in Docker containers
+> Host entries generator and web interface for Docker containers.
 
-## Behavior
+This Go program will listen for Docker events and generate `/etc/hosts` entries according to specific labels declared on Docker containers.
 
-In order for a entry to appear, we need a correct host.
-That means a protocol, a host (or ip), a port and a path.
+On top of that, a friendly web interface will list web exposed containers on to a nice grid.
 
-Override rules are as follows.
+See the web interface after having created the following containers.
 
-### protocol
+    docker run -d --name test1 \
+        --label ghosts.host="test1.local" \
+        nginx
 
- 1. label ghosts.protocol
- 2. traefik entrypoint
- 3. http default value
+    docker run -d --name test2 \
+        --label ghosts.category="System" \
+        --label ghosts.host="test2.local" \
+        nginx
 
-### host
+    docker run -d --name test3 \
+        --label ghosts.host="test3.local" \
+        --label ghosts.name="Friendly app" \
+        nginx
 
- 1. label ghosts.host or traefik frontend rule (according to traefik_mode)
- 2. if direct_mode: container ip
+    docker run -d --name test4 \
+        --label ghosts.host="test4.local" \
+        --label ghosts.name="Jenkins" \
+        --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
+        nginx
 
-## Parameters
+![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/screenshot.png)
 
-    proxy_ip
-    traefik_mode
-    direct_mode (using container ip)
-    hosts_file
+## Quickstart with Docker
 
-## Container parameters
+To start the server, use the following command.
 
- - logo
- - category
- - name
- - description
- - auth
- - proto
- - host
- - path
- - hide
+    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts

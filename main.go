@@ -17,6 +17,7 @@ type config struct {
 	ProxyMode   bool
 	NoHosts     bool
 	NoWeb       bool
+	NoHelp      bool
 }
 
 func main() {
@@ -34,6 +35,7 @@ func main() {
 	flag.BoolVar(&config.ProxyMode, "proxymode", false, "Enable proxy")
 	flag.BoolVar(&config.NoHosts, "nohosts", false, "Don't generate hosts file")
 	flag.BoolVar(&config.NoWeb, "noweb", false, "Don't start web server")
+	flag.BoolVar(&config.NoHelp, "nohelp", false, "Disable help on web interface")
 	flag.Parse()
 
 	if config.Hosts != "" {
