@@ -62,11 +62,11 @@ To start the server, use the following command.
 
 ## Container parameters
 
- - `ghosts.host`: Host of container (e.g. mycontainer.local.com)
+ - `ghosts.host`: Host of container (e.g. mycontainer.local.com). If in traefik mode, it can be taken from `traefik.frontend.rule`.
  - `ghosts.port`: Override port. Otherwise taken from exposed ports or traefik port.
  - `ghosts.name`: Define web name. Otherwise taken from the container name.
- - `ghosts.proto`: Define web protocol. Can be taken from traefik entrypoints.
- - `ghosts.auth`: Define if auth protected entry. Can be taken from traefik basic auth.
+ - `ghosts.proto`: Define web protocol. If in traefik mode, it can be taken from `traefik.frontend.entryPoints`.
+ - `ghosts.auth`: Define if auth protected entry. If in traefik mode, it can be taken from `traefik.frontend.auth.basic`.
  - `ghosts.category`: Define a web category. Defaults to "Apps".
  - `ghosts.logo`: Define a web logo. Defaults to a generated avatar with the initials of the entry name.
  - `ghosts.description`: Add a web description that will appear as a tooltip.
