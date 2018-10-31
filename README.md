@@ -1,6 +1,6 @@
 # Ghosts
 
-![logo](https://raw.githubusercontent.com/lobre/ghosts/master/static/logo.png)
+![logo](https://raw.githubusercontent.com/lobre/ghosts/master/static/logo.png | width=50)
 
 > Host entries generator and web interface for Docker containers.
 
