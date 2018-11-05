@@ -30,13 +30,29 @@ See the web interface after having created the following containers.
         --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
         nginx
 
-![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/img/screenshot.png)
 
 ## Quickstart with Docker
 
 To start the server, use the following command.
 
     docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts
+
+### Windows
+
+To let the container edit the `C:\Windows\System32\drivers\etc\hosts`, we need to update the permissions of the file to let the current user edit without Administrator rights.
+
+![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/img/windows_permissions.png)
+
+Then, we also need to add the `forcecrlf` parameter of ghosts.
+
+    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -forcecrlf
+
+#### Docker machine Virtualbox
+
+By default, only `C:\Users` is shared to the VM. So the hosts file won't be available to Docker containers by default. We need to add a specific shared mount.
+
+![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/img/vbox_shared.png)
 
 ## Modes
 
@@ -61,6 +77,8 @@ Ghosts has three different modes.
             Don't generate hosts file
       -noweb
             Don't start web server
+      -forcecrlf
+            Force CRLF end of lines
       -proxyip string
             Specific proxy IP for hosts entries (default "127.0.0.1")
       -proxymode
@@ -68,7 +86,7 @@ Ghosts has three different modes.
       -traefikmode
             Enable integration with Traefik proxy
 
-## Container parameters
+## Container parameters as labels
 
  - `ghosts.host`: Host of container (e.g. mycontainer.local.com). If in traefik mode, it can be taken from `traefik.frontend.rule`.
  - `ghosts.port`: Override port. Otherwise taken from exposed ports or traefik port.

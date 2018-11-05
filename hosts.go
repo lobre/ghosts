@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
+
 	"github.com/lextoumbourou/goodhosts"
 )
 
@@ -58,6 +61,12 @@ func addHosts(docker docker, config config, ids ...string) error {
 		return err
 	}
 
+	if config.ForceCRLF {
+		if err := forceCrlfEOL(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -81,6 +90,34 @@ func removeHosts(docker docker, config config, ids ...string) error {
 	}
 
 	if err := hosts.Flush(); err != nil {
+		return err
+	}
+
+	if config.ForceCRLF {
+		if err := forceCrlfEOL(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func forceCrlfEOL() error {
+	hosts, err := goodhosts.NewHosts()
+	if err != nil {
+		return err
+	}
+
+	read, err := ioutil.ReadFile(hosts.Path)
+	if err != nil {
+		return err
+	}
+
+	// Replace lf by crlf
+	normalized := bytes.Replace(read, []byte{10}, []byte{13, 10}, -1)
+
+	err = ioutil.WriteFile(hosts.Path, normalized, 0)
+	if err != nil {
 		return err
 	}
 

@@ -41,4 +41,4 @@ WORKDIR /app
 # Create fake hosts file
 RUN touch /app/hosts
 
-ENTRYPOINT ./ghosts -hosts="/app/hosts"
+ENTRYPOINT ["./ghosts", "-hosts=/app/hosts"]

@@ -18,6 +18,7 @@ type config struct {
 	NoHosts     bool
 	NoWeb       bool
 	NoHelp      bool
+	ForceCRLF   bool
 }
 
 func main() {
@@ -36,6 +37,7 @@ func main() {
 	flag.BoolVar(&config.NoHosts, "nohosts", false, "Don't generate hosts file")
 	flag.BoolVar(&config.NoWeb, "noweb", false, "Don't start web server")
 	flag.BoolVar(&config.NoHelp, "nohelp", false, "Disable help on web interface")
+	flag.BoolVar(&config.ForceCRLF, "forcecrlf", false, "Force CRLF end of lines")
 	flag.Parse()
 
 	if config.Hosts != "" {
