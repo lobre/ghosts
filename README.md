@@ -48,7 +48,7 @@ To let the container edit the `C:\Windows\System32\drivers\etc\hosts`, we need t
 
 Then, we also need to add the `forcecrlf` parameter of ghosts.
 
-    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -forcecrlf
+    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -hostsforcecrlf
 
 #### Docker machine Virtualbox
 
