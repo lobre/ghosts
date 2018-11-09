@@ -50,18 +50,14 @@
                                     <div class="entry">
                                         <div class="panel">
                                             <div class="panel-header text-center">
-                                                <figure class="avatar avatar-xl">
-                                                    {{ if .Logo }}
-                                                        <img class="bg-gray" src="{{ .Logo }}" alt="{{ .Name }}">
-                                                    {{ else }}
-                                                        <img data-name="{{ .Name }}" alt="{{ .Name }}" class="initial"/>
-                                                    {{ end }}
-                                                </figure>
-                                                <div class="panel-subtitle">
-                                                    {{ if .Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Name | upper }}
-                                                </div>
-                                                <div class="popover popover-top">
-                                                    <a href="{{ .URL $.Config }}" target="_blank" class="btn btn-primary">Open</a>
+                                                <div class="popover popover-right">
+                                                    <figure class="avatar avatar-xl">
+                                                        {{ if .Logo }}
+                                                            <img class="bg-gray" src="{{ .Logo }}" alt="{{ .Name }}">
+                                                        {{ else }}
+                                                            <img data-name="{{ .Name }}" alt="{{ .Name }}" class="initial"/>
+                                                        {{ end }}
+                                                    </figure>
 
                                                     {{ if .Description }}
                                                     <div class="popover-container">
@@ -71,6 +67,10 @@
                                                     </div>
                                                     {{ end }}
                                                 </div>
+                                                <div class="panel-subtitle">
+                                                    {{ if .Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Name | upper }}
+                                                </div>
+                                                <a href="{{ .URL $.Config }}" target="_blank" class="btn btn-primary">Open</a>
                                             </div>
                                         </div>
                                     </div>
