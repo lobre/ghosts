@@ -8,7 +8,7 @@ This Go program will listen for Docker events and fill the gaps of:
 
  - Generating `/etc/hosts` entries according to specific labels declared on Docker containers.
  - Generating a web interface to list web exposed containers in a nice grid.
- - Auto connect a external proxy container to web exposed containers network.
+ - Auto connect network of web exposed containers to an external proxy.
 
 See the web interface after having created the following containers.
 
@@ -60,9 +60,9 @@ By default, only `C:\Users` is shared to the VM. So the hosts file won't be avai
 
 Ghosts has three different modes.
 
- - Direct mode (default): containers IP will be used directly for matching with host.
- - Proxy mode: all containers hosts will be redirected to the proxy IP (can be defined using the binary parameter `-proxyIP`).
- - Traefik mode: Same as proxy mode but this will allow using traefik labels to generate hosts.
+ - **Direct mode (default)**: containers IP will be used directly for matching with host.
+ - **Proxy mode**: all containers hosts will be redirected to the proxy IP (can be defined using the binary parameter `-proxyIP`).
+ - **Traefik mode**: Same as proxy mode but this will allow using traefik labels to generate hosts.
 
 ## Binary parameters
 
