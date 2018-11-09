@@ -9,10 +9,11 @@ const labelPrefix string = "ghosts"
 const defaultCategory string = "apps"
 
 type entry struct {
-	Host  string
-	IP    string
-	Port  string
-	Proto string
+	Host      string
+	IP        string
+	NetworkID string
+	Port      string
+	Proto     string
 
 	Name        string
 	Category    string
@@ -20,10 +21,11 @@ type entry struct {
 	Logo        string
 	Auth        bool
 
-	NoWeb     bool
-	NoHosts   bool
-	Direct    bool
-	WebDirect bool
+	NoWeb            bool
+	NoHosts          bool
+	NoNetAutoConnect bool
+	Direct           bool
+	WebDirect        bool
 }
 
 func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
@@ -50,9 +52,10 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 			continue
 		}
 
-		// Take the IP of the first network
+		// Take the IP of the first network and the network ID
 		for _, n := range container.NetworkSettings.Networks {
 			entry.IP = n.IPAddress
+			entry.NetworkID = n.NetworkID
 			break
 		}
 
@@ -120,6 +123,12 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry.NoHosts = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.nohosts", labelPrefix)]; ok && val == "true" {
 			entry.NoHosts = true
+		}
+
+		// No Net Auto Connect
+		entry.NoNetAutoConnect = false
+		if val, ok := container.Labels[fmt.Sprintf("%s.nonetautoconnect", labelPrefix)]; ok && val == "true" {
+			entry.NoNetAutoConnect = true
 		}
 
 		// Direct

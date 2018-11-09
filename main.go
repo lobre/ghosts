@@ -9,16 +9,18 @@ import (
 )
 
 type config struct {
-	Addr        string
-	Help        string
-	ProxyIP     string
-	Hosts       string
-	TraefikMode bool
-	ProxyMode   bool
-	NoHosts     bool
-	NoWeb       bool
-	NoHelp      bool
-	ForceCRLF   bool
+	Addr                string
+	Help                string
+	ProxyIP             string
+	Hosts               string
+	TraefikMode         bool
+	ProxyMode           bool
+	ProxyNetAutoConnect bool
+	ProxyContainerName  string
+	NoHosts             bool
+	NoWeb               bool
+	NoHelp              bool
+	HostsForceCRLF      bool
 }
 
 func main() {
@@ -34,10 +36,12 @@ func main() {
 	flag.StringVar(&config.Hosts, "hosts", "", "Custom location for hosts file")
 	flag.BoolVar(&config.TraefikMode, "traefikmode", false, "Enable integration with Traefik proxy")
 	flag.BoolVar(&config.ProxyMode, "proxymode", false, "Enable proxy")
+	flag.BoolVar(&config.ProxyNetAutoConnect, "proxynetautoconnect", false, "Enable automatic network connection between proxy and containers")
+	flag.StringVar(&config.ProxyContainerName, "proxycontainername", "", "Name of proxy container")
 	flag.BoolVar(&config.NoHosts, "nohosts", false, "Don't generate hosts file")
 	flag.BoolVar(&config.NoWeb, "noweb", false, "Don't start web server")
 	flag.BoolVar(&config.NoHelp, "nohelp", false, "Disable help on web interface")
-	flag.BoolVar(&config.ForceCRLF, "forcecrlf", false, "Force CRLF end of lines")
+	flag.BoolVar(&config.HostsForceCRLF, "hostsforcecrlf", false, "Force CRLF end of lines when generating hosts entries")
 	flag.Parse()
 
 	if config.Hosts != "" {
@@ -45,6 +49,23 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
+
+	// Network
+	if (config.ProxyMode || config.TraefikMode) && config.ProxyNetAutoConnect {
+		proxyName := config.ProxyContainerName
+		if proxyName == "" && config.TraefikMode {
+			proxyName = "traefik"
+		}
+		if proxyName != "" {
+			wg.Add(1)
+			go func() {
+				if err := networkConnect(proxyName, docker, config); err != nil {
+					log.Fatal(err)
+				}
+				wg.Done()
+			}()
+		}
+	}
 
 	// Hosts
 	if !config.NoHosts {

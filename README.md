@@ -2,11 +2,13 @@
 
 <img src="https://raw.githubusercontent.com/lobre/ghosts/master/static/logo.png" width="250">
 
-> Host entries generator and web interface for Docker containers.
+> Host entries generator, automatic network connection and web interface for Docker containers.
 
-This Go program will listen for Docker events and generate `/etc/hosts` entries according to specific labels declared on Docker containers.
+This Go program will listen for Docker events and fill the gaps of:
 
-On top of that, a friendly web interface will list web exposed containers on to a nice grid.
+ - Generating `/etc/hosts` entries according to specific labels declared on Docker containers.
+ - Generating a web interface to list web exposed containers in a nice grid.
+ - Auto connect a external proxy container to web exposed containers network.
 
 See the web interface after having created the following containers.
 
@@ -71,18 +73,22 @@ Ghosts has three different modes.
             Change the Web help link (default "https://github.com/lobre/ghosts/blob/master/README.md")
       -hosts string
             Custom location for hosts file
+      -hostsforcecrlf
+            Force CRLF end of lines when generating hosts entries
       -nohelp
             Disable help on web interface
       -nohosts
             Don't generate hosts file
       -noweb
             Don't start web server
-      -forcecrlf
-            Force CRLF end of lines
+      -proxycontainername string
+            Name of proxy container
       -proxyip string
             Specific proxy IP for hosts entries (default "127.0.0.1")
       -proxymode
             Enable proxy
+      -proxynetautoconnect
+            Enable automatic network connection between proxy and containers
       -traefikmode
             Enable integration with Traefik proxy
 
@@ -98,5 +104,6 @@ Ghosts has three different modes.
  - `ghosts.description`: Add a web description that will appear as a tooltip.
  - `ghosts.noweb`: Don't show on the web.
  - `ghosts.nohosts`: Don't generate entry in hosts file.
+ - `ghosts.nonetautoconnect`: Don't connect to proxy network.
  - `ghosts.direct`: Use direct container IP in hosts file even if in proxy mode.
  - `ghosts.webdirect`: Use direct container IP directly in web view even if in proxy mode.

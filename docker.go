@@ -61,6 +61,51 @@ func (docker docker) listenContainers() (<-chan events.Message, <-chan error) {
 	})
 }
 
+func (docker docker) containerIDFromName(name string) (string, error) {
+	filter := filters.NewArgs()
+	filter.Add("name", name)
+
+	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
+		All:     false,
+		Filters: filter,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if len(containers) > 0 {
+		container := containers[0]
+		return container.ID, nil
+	}
+
+	return "", fmt.Errorf("Container with name %s not found", name)
+}
+
+func (docker docker) hasNetwork(containerID, networkID string) (bool, error) {
+	filter := filters.NewArgs()
+	filter.Add("id", containerID)
+
+	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
+		All:     false,
+		Filters: filter,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	if len(containers) > 0 {
+		container := containers[0]
+		for _, n := range container.NetworkSettings.Networks {
+			if networkID == n.NetworkID {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+
+	return false, fmt.Errorf("Container with id %s not found", containerID)
+}
+
 func setDockerAPIVersion() error {
 	cmd := exec.Command("docker", "version", "--format", "{{.Server.APIVersion}}")
 	cmdOutput := &bytes.Buffer{}

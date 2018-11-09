@@ -61,7 +61,7 @@ func addHosts(docker docker, config config, ids ...string) error {
 		return err
 	}
 
-	if config.ForceCRLF {
+	if config.HostsForceCRLF {
 		if err := forceCrlfEOL(); err != nil {
 			return err
 		}
@@ -93,7 +93,7 @@ func removeHosts(docker docker, config config, ids ...string) error {
 		return err
 	}
 
-	if config.ForceCRLF {
+	if config.HostsForceCRLF {
 		if err := forceCrlfEOL(); err != nil {
 			return err
 		}
