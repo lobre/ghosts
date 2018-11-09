@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 
-	"github.com/lextoumbourou/goodhosts"
+	"github.com/lobre/goodhosts"
 )
 
 func hosts(docker docker, config config) error {
