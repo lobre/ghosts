@@ -1,0 +1,47 @@
+version: '2'
+services:
+  traefik:
+    image: traefik
+    command: --docker.domain=local --logLevel=DEBUG
+    container_name: traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik.toml:/traefik.toml
+    labels:
+      - traefik.port=8080
+      - traefik.frontend.rule=Host:traefik.local
+      - ghosts.category=system
+      - ghosts.logo=http://ghosts.local/static/traefik.png
+      - ghosts.description=Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
+    restart: always
+  ghosts:
+    image: lobre/ghosts
+    container_name: ghosts
+    command: -traefikmode -proxynetautoconnect
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/hosts:/app/hosts
+      - ./traefik.png:/app/static/traefik.png
+      - ./portainer.png:/app/static/portainer.png
+    labels:
+      - traefik.port=8080
+      - traefik.frontend.rule=Host:ghosts.local
+      - ghosts.noweb=true
+    depends_on:
+      - traefik
+    restart: always
+  portainer:
+    image: portainer/portainer
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - traefik.port=9000
+      - traefik.frontend.rule=Host:portainer.local
+      - ghosts.category=system
+      - ghosts.logo=http://ghosts.local/static/portainer.png
+      - ghosts.description=Portainer is an open-source lightweight management UI which allows you to easily manage your docker hosts or swarm clusters.
+    restart: always
