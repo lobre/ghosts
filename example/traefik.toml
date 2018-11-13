@@ -21,4 +21,4 @@ KeyFile = "local.key"
 [docker]
 endpoint = "unix:///var/run/docker.sock"
 watch = true
-exposedbydefault = true
+exposedbydefault = false

@@ -11,6 +11,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.toml:/traefik.toml
     labels:
+      - traefik.enable=true
       - traefik.port=8080
       - traefik.frontend.rule=Host:traefik.local
       - ghosts.category=system
@@ -27,6 +28,7 @@ services:
       - ./traefik.png:/app/static/traefik.png
       - ./portainer.png:/app/static/portainer.png
     labels:
+      - traefik.enable=true
       - traefik.port=8080
       - traefik.frontend.rule=Host:ghosts.local
       - ghosts.noweb=true
@@ -39,6 +41,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
+      - traefik.enable=true
       - traefik.port=9000
       - traefik.frontend.rule=Host:portainer.local
       - ghosts.category=system
