@@ -50,10 +50,15 @@ func addHosts(docker docker, config config, ids ...string) error {
 			continue
 		}
 
-		if (entry.Direct || (!config.ProxyMode && !config.TraefikMode)) && !hosts.Has(entry.IP, entry.Host) {
-			hosts.Add(entry.IP, entry.Host)
-		} else if !hosts.Has(config.ProxyIP, entry.Host) {
-			hosts.Add(config.ProxyIP, entry.Host)
+		ip := config.ProxyIP
+		if entry.Direct || (!config.ProxyMode && !config.TraefikMode) {
+			ip = entry.IP
+		}
+
+		for _, host := range entry.Hosts {
+			if !hosts.Has(ip, host) {
+				hosts.Add(ip, host)
+			}
 		}
 	}
 
@@ -82,10 +87,15 @@ func removeHosts(docker docker, config config, ids ...string) error {
 	}
 
 	for _, entry := range entries {
-		if (entry.Direct || (!config.ProxyMode && !config.TraefikMode)) && hosts.Has(entry.IP, entry.Host) {
-			hosts.Remove(entry.IP, entry.Host)
-		} else if hosts.Has(config.ProxyIP, entry.Host) {
-			hosts.Remove(config.ProxyIP, entry.Host)
+		ip := config.ProxyIP
+		if entry.Direct || (!config.ProxyMode && !config.TraefikMode) {
+			ip = entry.IP
+		}
+
+		for _, host := range entry.Hosts {
+			if hosts.Has(ip, host) {
+				hosts.Remove(ip, host)
+			}
 		}
 	}
 

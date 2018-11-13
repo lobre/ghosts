@@ -9,7 +9,7 @@ const labelPrefix string = "ghosts"
 const defaultCategory string = "apps"
 
 type entry struct {
-	Host      string
+	Hosts     []string
 	IP        string
 	NetworkID string
 	Port      string
@@ -40,15 +40,21 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry := entry{}
 
 		// Host
-		if val, ok := container.Labels[fmt.Sprintf("%s.host", labelPrefix)]; ok {
-			entry.Host = val
+		if val, ok := container.Labels[fmt.Sprintf("%s.hosts", labelPrefix)]; ok {
+			array := strings.Split(val, ",")
+			if len(array) > 0 {
+				entry.Hosts = array
+			}
 		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.TraefikMode {
 			val = strings.TrimPrefix(val, "Host:")
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
-				entry.Host = array[0]
+				entry.Hosts = array
 			}
-		} else {
+		}
+
+		// Skip if no hosts
+		if len(entry.Hosts) == 0 {
 			continue
 		}
 
@@ -159,17 +165,17 @@ func (e entry) URL(config config) string {
 			host = e.IP
 			port = e.Port
 		} else {
-			host = e.Host
+			host = e.Hosts[0]
 			port = e.Port
 		}
 	} else {
 		// Proxy mode
 
 		if e.Proto == "http" {
-			host = e.Host
+			host = e.Hosts[0]
 			port = "80"
 		} else {
-			host = e.Host
+			host = e.Hosts[0]
 			port = "443"
 		}
 

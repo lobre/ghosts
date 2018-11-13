@@ -13,21 +13,21 @@ This Go program will listen for Docker events and fill the gaps of:
 See the web interface after having created the following containers.
 
     docker run -d --name test1 \
-        --label ghosts.host="test1.local" \
+        --label ghosts.hosts="test1.local" \
         nginx
 
     docker run -d --name test2 \
         --label ghosts.category="System" \
-        --label ghosts.host="test2.local" \
+        --label ghosts.hosts="test2.local" \
         nginx
 
     docker run -d --name test3 \
-        --label ghosts.host="test3.local" \
+        --label ghosts.hosts="test3.local" \
         --label ghosts.name="Friendly app" \
         nginx
 
     docker run -d --name test4 \
-        --label ghosts.host="test4.local" \
+        --label ghosts.hosts="test4.local" \
         --label ghosts.name="Jenkins" \
         --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
         nginx
@@ -94,7 +94,7 @@ Ghosts has three different modes.
 
 ## Container parameters as labels
 
- - `ghosts.host`: Host of container (e.g. mycontainer.local.com). If in traefik mode, it can be taken from `traefik.frontend.rule`.
+ - `ghosts.hosts`: Host of container (e.g. mycontainer.local.com). If in traefik mode, it can be taken from `traefik.frontend.rule`.
  - `ghosts.port`: Override port. Otherwise taken from exposed ports or traefik port.
  - `ghosts.name`: Define web name. Otherwise taken from the container name.
  - `ghosts.proto`: Define web protocol. If in traefik mode, it can be taken from `traefik.frontend.entryPoints`.
