@@ -70,11 +70,11 @@
                                                 <div class="panel-subtitle">
                                                     {{ if .Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Name | upper }}
                                                 </div>
-                                                <div class="links">
-                                                    {{range $host := .URLS $.Config }}
-                                                        <a href="{{ $host }}" target="_blank">{{ $host }}</a>
-                                                    {{ end }}
-                                                </div>
+                                            </div>
+                                            <div class="panel-body text-center">
+                                                {{range $host := .URLS $.Config }}
+                                                    <a href="{{ $host }}" target="_blank">{{ $host }}</a>
+                                                {{ end }}
                                             </div>
                                         </div>
                                     </div>
