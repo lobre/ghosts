@@ -33,9 +33,6 @@
     margin-right: .5rem;
 }
 
-.footer {
-}
-
 .column { 
     padding: .5rem; 
 }
@@ -51,15 +48,8 @@
     margin: 15px 0;
 }
 
-.entry .panel .panel-body {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.entry .panel .panel-footer {
-    text-align: center;
+.entry .panel .panel-header .links {
+    font-size: 12px;
 }
 
 .category {
@@ -85,9 +75,4 @@
 
 .avatar {
     background: none;
-}
-
-.btn.btn-block {
-    display: initial;
-    width: auto;
 }

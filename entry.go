@@ -154,32 +154,23 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 	return entries, nil
 }
 
-func (e entry) URL(config config) string {
-	var host, port string
+func (e entry) URLS(config config) []string {
+	var urls []string
+	var port string
 
+	// Check specific port if direct mode
 	if e.Direct || e.WebDirect || (!config.ProxyMode && !config.TraefikMode) {
-		// Direct mode
+		port = fmt.Sprintf(":%s", e.Port)
 
 		// Use container IP if hosts are not generated and in direct mode
 		if e.WebDirect || config.NoHosts || e.NoHosts {
-			host = e.IP
-			port = e.Port
-		} else {
-			host = e.Hosts[0]
-			port = e.Port
+			return []string{fmt.Sprintf("%s://%s%s", e.Proto, e.IP, e.Port)}
 		}
-	} else {
-		// Proxy mode
-
-		if e.Proto == "http" {
-			host = e.Hosts[0]
-			port = "80"
-		} else {
-			host = e.Hosts[0]
-			port = "443"
-		}
-
 	}
 
-	return fmt.Sprintf("%s://%s:%s", e.Proto, host, port)
+	for _, host := range e.Hosts {
+		urls = append(urls, fmt.Sprintf("%s://%s%s", e.Proto, host, port))
+	}
+
+	return urls
 }
