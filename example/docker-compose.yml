@@ -38,6 +38,7 @@ services:
   portainer:
     image: portainer/portainer
     container_name: portainer
+    command: --no-auth
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
