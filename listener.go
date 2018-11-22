@@ -1,5 +1,9 @@
 package main
 
+import (
+	"log"
+)
+
 type listener struct {
 	docker     docker
 	processors []processor
@@ -31,12 +35,14 @@ func (l listener) start(stop <-chan int) error {
 		case event := <-c:
 			switch event.Action {
 			case "start":
+				log.Printf("start of %s", event.ID)
 				for _, p := range l.processors {
 					if err := p.startEvent(event.ID); err != nil {
 						return err
 					}
 				}
 			case "die":
+				log.Printf("death of %s", event.ID)
 				for _, p := range l.processors {
 					if err := p.dieEvent(event.ID); err != nil {
 						return err

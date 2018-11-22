@@ -5,7 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 type config struct {
@@ -80,27 +82,45 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	var stop <-chan int
+	sigstop := make(chan os.Signal)
+	listenerStop := make(chan int)
+	signal.Notify(sigstop, syscall.SIGINT, syscall.SIGTERM)
 
 	// Docker listener routine
 	wg.Add(1)
 	go func() {
-		if err := listener.start(stop); err != nil {
+		if err := listener.start(listenerStop); err != nil {
 			log.Fatal(err)
 		}
+		log.Print("Listener stopped")
 		wg.Done()
 	}()
 
 	// Web routine
+	server := &http.Server{Addr: config.Addr}
+	http.Handle("/", &appHandler{config, em})
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	if !config.NoWeb {
 		wg.Add(1)
 		go func() {
-			http.Handle("/", &appHandler{config, em})
-			http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-			log.Fatal(http.ListenAndServe(config.Addr, nil))
+			if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatal(err)
+			}
+			log.Print("Web server stopped")
 			wg.Done()
 		}()
 	}
+
+	// Sigstop signal received
+	<-sigstop
+
+	// Gracefully stop web server
+	if err := server.Shutdown(nil); err != nil {
+		log.Fatal(err)
+	}
+
+	// Gracefully stop listener
+	listenerStop <- 1
 
 	wg.Wait()
 }
