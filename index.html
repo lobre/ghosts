@@ -72,7 +72,7 @@
                                                 </div>
                                             </div>
                                             <div class="panel-body text-center">
-                                                {{range $host := .URLS $.Config }}
+                                                {{range $host := $.EntriesManager.URLS . }}
                                                     <a href="{{ $host }}" target="_blank">{{ $host }}</a>
                                                 {{ end }}
                                             </div>

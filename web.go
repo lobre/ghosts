@@ -10,7 +10,7 @@ type frontEntries map[string][]entry
 
 type appHandler struct {
 	config config
-	docker docker
+	em     entriesManager
 }
 
 func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -19,16 +19,18 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"upper":      strings.ToUpper,
 	}).ParseFiles("index.html")
 
-	entries, err := getEntries(h.docker, h.config)
+	entries, err := h.em.get()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	err = tmpl.Execute(w, struct {
-		Config  config
-		Entries frontEntries
+		Config         config
+		EntriesManager entriesManager
+		Entries        frontEntries
 	}{
 		h.config,
+		h.em,
 		prepare(entries),
 	})
 

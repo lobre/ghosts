@@ -8,6 +8,11 @@ import (
 const labelPrefix string = "ghosts"
 const defaultCategory string = "apps"
 
+type entriesManager struct {
+	docker docker
+	config config
+}
+
 type entry struct {
 	Hosts     []string
 	IP        string
@@ -28,10 +33,14 @@ type entry struct {
 	WebDirect        bool
 }
 
-func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
+func newEntriesManager(docker docker, config config) entriesManager {
+	return entriesManager{docker, config}
+}
+
+func (em entriesManager) get(ids ...string) ([]entry, error) {
 	var entries []entry
 
-	containers, err := docker.getContainers(ids...)
+	containers, err := em.docker.getContainers(ids...)
 	if err != nil {
 		return entries, err
 	}
@@ -45,7 +54,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 			if len(array) > 0 {
 				entry.Hosts = array
 			}
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && config.TraefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && em.config.TraefikMode {
 			val = strings.TrimPrefix(val, "Host:")
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
@@ -88,7 +97,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry.Proto = "http"
 		if val, ok := container.Labels[fmt.Sprintf("%s.proto", labelPrefix)]; ok {
 			entry.Proto = val
-		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && config.TraefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && em.config.TraefikMode {
 			array := strings.Split(val, ",")
 			if len(array) > 0 {
 				entry.Proto = array[0]
@@ -99,7 +108,7 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 		entry.Auth = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.auth", labelPrefix)]; ok && val == "true" {
 			entry.Auth = true
-		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && config.TraefikMode {
+		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && em.config.TraefikMode {
 			entry.Auth = true
 		}
 
@@ -154,16 +163,16 @@ func getEntries(docker docker, config config, ids ...string) ([]entry, error) {
 	return entries, nil
 }
 
-func (e entry) URLS(config config) []string {
+func (em entriesManager) URLS(e entry) []string {
 	var urls []string
 	var port string
 
 	// Check specific port if direct mode
-	if e.Direct || e.WebDirect || (!config.ProxyMode && !config.TraefikMode) {
+	if e.Direct || e.WebDirect || (!em.config.ProxyMode && !em.config.TraefikMode) {
 		port = fmt.Sprintf(":%s", e.Port)
 
 		// Use container IP if hosts are not generated and in direct mode
-		if e.WebDirect || config.NoHosts || e.NoHosts {
+		if e.WebDirect || em.config.NoHosts || e.NoHosts {
 			return []string{fmt.Sprintf("%s://%s%s", e.Proto, e.IP, e.Port)}
 		}
 	}

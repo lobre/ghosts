@@ -7,35 +7,29 @@ import (
 	"github.com/lobre/goodhosts"
 )
 
-func hosts(docker docker, config config) error {
-	// Initialize hosts
-	if err := addHosts(docker, config); err != nil {
-		return err
-	}
-
-	// Listen to Docker events
-	msgCh, errCh := docker.listenContainers()
-	for {
-		select {
-		case msg := <-msgCh:
-			switch msg.Action {
-			case "start":
-				if err := addHosts(docker, config, msg.ID); err != nil {
-					return err
-				}
-			case "die":
-				if err := removeHosts(docker, config, msg.ID); err != nil {
-					return err
-				}
-			}
-		case err := <-errCh:
-			return err
-		}
-	}
+type hostsProcessor struct {
+	config config
+	em     entriesManager
 }
 
-func addHosts(docker docker, config config, ids ...string) error {
-	entries, err := getEntries(docker, config, ids...)
+func newHostsProcessor(config config, em entriesManager) hostsProcessor {
+	return hostsProcessor{config, em}
+}
+
+func (h hostsProcessor) init() error {
+	return h.add()
+}
+
+func (h hostsProcessor) startEvent(id string) error {
+	return h.add(id)
+}
+
+func (h hostsProcessor) dieEvent(id string) error {
+	return h.remove(id)
+}
+
+func (h hostsProcessor) add(ids ...string) error {
+	entries, err := h.em.get(ids...)
 	if err != nil {
 		return err
 	}
@@ -50,8 +44,8 @@ func addHosts(docker docker, config config, ids ...string) error {
 			continue
 		}
 
-		ip := config.ProxyIP
-		if entry.Direct || (!config.ProxyMode && !config.TraefikMode) {
+		ip := h.config.ProxyIP
+		if entry.Direct || (!h.config.ProxyMode && !h.config.TraefikMode) {
 			ip = entry.IP
 		}
 
@@ -66,7 +60,7 @@ func addHosts(docker docker, config config, ids ...string) error {
 		return err
 	}
 
-	if config.HostsForceCRLF {
+	if h.config.HostsForceCRLF {
 		if err := forceCrlfEOL(); err != nil {
 			return err
 		}
@@ -75,8 +69,8 @@ func addHosts(docker docker, config config, ids ...string) error {
 	return nil
 }
 
-func removeHosts(docker docker, config config, ids ...string) error {
-	entries, err := getEntries(docker, config, ids...)
+func (h hostsProcessor) remove(ids ...string) error {
+	entries, err := h.em.get(ids...)
 	if err != nil {
 		return err
 	}
@@ -87,8 +81,8 @@ func removeHosts(docker docker, config config, ids ...string) error {
 	}
 
 	for _, entry := range entries {
-		ip := config.ProxyIP
-		if entry.Direct || (!config.ProxyMode && !config.TraefikMode) {
+		ip := h.config.ProxyIP
+		if entry.Direct || (!h.config.ProxyMode && !h.config.TraefikMode) {
 			ip = entry.IP
 		}
 
@@ -103,7 +97,7 @@ func removeHosts(docker docker, config config, ids ...string) error {
 		return err
 	}
 
-	if config.HostsForceCRLF {
+	if h.config.HostsForceCRLF {
 		if err := forceCrlfEOL(); err != nil {
 			return err
 		}
@@ -112,6 +106,7 @@ func removeHosts(docker docker, config config, ids ...string) error {
 	return nil
 }
 
+// To be shifted the the goodhosts project
 func forceCrlfEOL() error {
 	hosts, err := goodhosts.NewHosts()
 	if err != nil {

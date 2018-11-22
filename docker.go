@@ -19,7 +19,7 @@ type docker struct {
 }
 
 // Init docker cli
-func newDockerCli() (docker, error) {
+func newDocker() (docker, error) {
 	err := setDockerAPIVersion()
 	if err != nil {
 		return docker{}, err

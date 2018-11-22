@@ -23,10 +23,16 @@ type config struct {
 	HostsForceCRLF      bool
 }
 
+type processor interface {
+	init() error
+	startEvent(id string) error
+	dieEvent(id string) error
+}
+
 func main() {
-	docker, err := newDockerCli()
+	docker, err := newDocker()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	var config config
@@ -48,7 +54,8 @@ func main() {
 		os.Setenv("HOSTS_PATH", config.Hosts)
 	}
 
-	var wg sync.WaitGroup
+	listener := newListener(docker)
+	em := newEntriesManager(docker, config)
 
 	// Network
 	if (config.ProxyMode || config.TraefikMode) && config.ProxyNetAutoConnect {
@@ -57,32 +64,38 @@ func main() {
 			proxyName = "traefik"
 		}
 		if proxyName != "" {
-			wg.Add(1)
-			go func() {
-				if err := networkConnect(proxyName, docker, config); err != nil {
-					log.Fatal(err)
-				}
-				wg.Done()
-			}()
+			np, err := newNetworksProcessor(docker, config, em, proxyName)
+			if err != nil {
+				panic(err)
+			}
+
+			listener.addProcessor(np)
 		}
 	}
 
 	// Hosts
 	if !config.NoHosts {
-		wg.Add(1)
-		go func() {
-			if err := hosts(docker, config); err != nil {
-				log.Fatal(err)
-			}
-			wg.Done()
-		}()
+		hp := newHostsProcessor(config, em)
+		listener.addProcessor(hp)
 	}
 
-	// Web
+	var wg sync.WaitGroup
+	var stop <-chan int
+
+	// Docker listener routine
+	wg.Add(1)
+	go func() {
+		if err := listener.start(stop); err != nil {
+			log.Fatal(err)
+		}
+		wg.Done()
+	}()
+
+	// Web routine
 	if !config.NoWeb {
 		wg.Add(1)
 		go func() {
-			http.Handle("/", &appHandler{config, docker})
+			http.Handle("/", &appHandler{config, em})
 			http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 			log.Fatal(http.ListenAndServe(config.Addr, nil))
 			wg.Done()
