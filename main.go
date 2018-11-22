@@ -66,7 +66,7 @@ func main() {
 		if proxyName != "" {
 			np, err := newNetworksProcessor(docker, config, em, proxyName)
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 
 			listener.addProcessor(np)
