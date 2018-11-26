@@ -2,23 +2,31 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
+
+	"github.com/docker/docker/api/types"
 )
 
-const labelPrefix string = "ghosts"
-const defaultCategory string = "apps"
+const (
+	labelPrefix     string = "ghosts"
+	defaultCategory string = "apps"
+)
 
 type entriesManager struct {
 	docker docker
 	config config
 }
 
+type segment struct {
+	URLS []string
+	Port string
+}
+
 type entry struct {
-	Hosts     []string
+	Segments  map[string]segment
 	IP        string
 	NetworkID string
-	Port      string
-	Proto     string
 
 	Name        string
 	Category    string
@@ -29,8 +37,9 @@ type entry struct {
 	NoWeb            bool
 	NoHosts          bool
 	NoNetAutoConnect bool
-	Direct           bool
-	WebDirect        bool
+
+	Direct    bool
+	WebDirect bool
 }
 
 func newEntriesManager(docker docker, config config) entriesManager {
@@ -48,22 +57,9 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 	for _, container := range containers {
 		entry := entry{}
 
-		// Host
-		if val, ok := container.Labels[fmt.Sprintf("%s.hosts", labelPrefix)]; ok {
-			array := strings.Split(val, ",")
-			if len(array) > 0 {
-				entry.Hosts = array
-			}
-		} else if val, ok := container.Labels["traefik.frontend.rule"]; ok && em.config.TraefikMode {
-			val = strings.TrimPrefix(val, "Host:")
-			array := strings.Split(val, ",")
-			if len(array) > 0 {
-				entry.Hosts = array
-			}
-		}
-
-		// Skip if no hosts
-		if len(entry.Hosts) == 0 {
+		// Skip if no segments
+		entry.Segments = parseSegments(container)
+		if len(entry.Segments) == 0 {
 			continue
 		}
 
@@ -74,34 +70,12 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 			break
 		}
 
-		// Port
-		if val, ok := container.Labels[fmt.Sprintf("%s.port", labelPrefix)]; ok {
-			entry.Port = val
-		} else {
-			// Take the first port exposed
-			for _, p := range container.Ports {
-				entry.Port = fmt.Sprint(p.PrivatePort)
-				break
-			}
-		}
-
 		// Name
 		entry.Name = "unknown"
 		if val, ok := container.Labels[fmt.Sprintf("%s.name", labelPrefix)]; ok {
 			entry.Name = val
 		} else if len(container.Names) > 0 {
 			entry.Name = strings.TrimPrefix(container.Names[0], "/")
-		}
-
-		// Protocol
-		entry.Proto = "http"
-		if val, ok := container.Labels[fmt.Sprintf("%s.proto", labelPrefix)]; ok {
-			entry.Proto = val
-		} else if val, ok := container.Labels["traefik.frontend.entryPoints"]; ok && em.config.TraefikMode {
-			array := strings.Split(val, ",")
-			if len(array) > 0 {
-				entry.Proto = array[0]
-			}
 		}
 
 		// Auth
@@ -161,6 +135,57 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 		entries = append(entries, entry)
 	}
 	return entries, nil
+}
+
+func parseSegments(container types.Container) map[string]segment {
+	var segments map[string]segment
+
+	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.urls", labelPrefix))
+	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.port", labelPrefix))
+
+	var urlsMap map[string][]string
+	var portMap map[string]string
+
+	for key, value := range container.Labels {
+		// Segment URLS
+		if match := rURLS.FindStringSubmatch(key); match != nil {
+			name := match[1]
+			urlsMap[name] = strings.Split(value, ",")
+		}
+		// Segment port
+		if match := rPort.FindStringSubmatch(key); match != nil {
+			name := match[1]
+			portMap[name] = value
+		}
+		// Default URLS
+		if key == fmt.Sprintf("%s.urls", labelPrefix) {
+			urlsMap[""] = strings.Split(value, ",")
+		}
+		// Default Port
+		if key == fmt.Sprintf("%s.port", labelPrefix) {
+			portMap[""] = value
+		}
+	}
+
+	// Take the first port exposed
+	defaultPort := "80"
+	for _, p := range container.Ports {
+		defaultPort = fmt.Sprint(p.PrivatePort)
+		break
+	}
+
+	// Bind urls and port
+	for name, urls := range urlsMap {
+		s := segment{URLS: urls}
+		if port, ok := portMap[name]; ok {
+			s.Port = port
+		} else {
+			s.Port = defaultPort
+		}
+		segments[name] = s
+	}
+
+	return segments
 }
 
 func (em entriesManager) URLS(e entry) []string {
