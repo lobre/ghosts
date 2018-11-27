@@ -13,21 +13,21 @@ This Go program will listen for Docker events and fill the gaps of:
 See the web interface after having created the following containers.
 
     docker run -d --name test1 \
-        --label ghosts.hosts="test1.local" \
+        --label ghosts.urls="test1.local" \
         nginx
 
     docker run -d --name test2 \
         --label ghosts.category="System" \
-        --label ghosts.hosts="test2.local" \
+        --label ghosts.urls="test2.local" \
         nginx
 
     docker run -d --name test3 \
-        --label ghosts.hosts="test3.local" \
+        --label ghosts.urls="test3.local" \
         --label ghosts.name="Friendly app" \
         nginx
 
     docker run -d --name test4 \
-        --label ghosts.hosts="test4.local" \
+        --label ghosts.urls="test4.local" \
         --label ghosts.name="Jenkins" \
         --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
         nginx
@@ -46,7 +46,7 @@ To let the container edit the `C:\Windows\System32\drivers\etc\hosts`, we need t
 
 ![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/img/windows_permissions.png)
 
-Then, we also need to add the `forcecrlf` parameter of ghosts.
+Then, we also need to add the `forcecrlf` parameter of ghosts to be sure we use Windows style end-of-line characters.
 
     docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -hostsforcecrlf
 
@@ -60,8 +60,8 @@ By default, only `C:\Users` is shared to the VM. So the hosts file won't be avai
 
 Ghosts has two different modes.
 
- - **Direct mode (default)**: containers IP will be used directly for matching with host.
- - **Proxy mode**: all containers hosts will be redirected to the proxy IP (can be defined using the binary parameter `-proxyIP`).
+ - **Direct mode (default)**: containers are accessed using their direct IP.
+ - **Proxy mode**: containers are accessed through the IP of a predefined proxy (the proxy IP can be defined using the binary parameter `-proxyIP`).
 
 ## Binary parameters
 

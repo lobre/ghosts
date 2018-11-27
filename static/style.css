@@ -51,11 +51,15 @@
 .entry .panel .panel-body {
     margin-bottom: 15px;
     overflow: hidden;
+    font-size: 12px;
 }
 
-.entry .panel .panel-body a, 
-.entry .panel .panel-body b {
-    font-size: 12px;
+.entry .panel .panel-body .segment a {
+    display: inherit;
+}
+
+.entry .panel .panel-body .segment-name{
+    font-weight: bold;
 }
 
 .category {

@@ -73,10 +73,12 @@
                                             </div>
                                             <div class="panel-body text-center">
                                                 {{ range $name, $segment := .Segments }}
-                                                    {{ if $name }}<b>{{ $name | capitalize }}</b><br>{{ end }}
+                                                    <div class="segment">
+                                                    {{ if $name }}<div class="segment-name">{{ $name | capitalize }}</div>{{ end }}
                                                     {{ range $url := .URLS }}
                                                         <a href="{{ $url.String }}" target="_blank">{{ $url.String }}</a>
                                                     {{ end }}
+                                                    </div>
                                                 {{ end }}
                                             </div>
                                         </div>

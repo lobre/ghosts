@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -52,13 +53,30 @@ func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
 					if entry.WebDirect ||
 						((!h.config.ProxyMode || entry.Direct) && (h.config.NoHosts || entry.NoHosts)) {
 						// Replace IP and Port in URL
-						// TODO put out of for to have only 1 url and 1 segment per entry
-						host := net.JoinHostPort(entry.IP, segment.Port)
+						host := entry.IP
+						if segment.Port != "80" && segment.Port != "443" {
+							host = net.JoinHostPort(host, segment.Port)
+						}
 						entries[i].Segments[name].URLS[j].Host = host
+
+						// Quickfix to keep only one url
+						tmpSeg := entries[i].Segments[name]
+						tmpSeg.URLS = []url.URL{entries[i].Segments[name].URLS[j]}
+						entries[i].Segments[name] = tmpSeg
+						break
 					} else if !h.config.ProxyMode || entry.Direct {
 						// Replace Port in URL
-						// TODO strip port from host before adding new port
-						host := net.JoinHostPort(u.Host, segment.Port)
+						host := u.Host
+						if strings.Contains(host, ":") {
+							var err error
+							host, _, err = net.SplitHostPort(u.Host)
+							if err != nil {
+								continue
+							}
+						}
+						if segment.Port != "80" && segment.Port != "443" {
+							host = net.JoinHostPort(host, segment.Port)
+						}
 						entries[i].Segments[name].URLS[j].Host = host
 					}
 				}
