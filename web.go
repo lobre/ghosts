@@ -57,6 +57,7 @@ func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
 						entries[i].Segments[name].URLS[j].Host = host
 					} else if !h.config.ProxyMode || entry.Direct {
 						// Replace Port in URL
+						// TODO strip port from host before adding new port
 						host := net.JoinHostPort(u.Host, segment.Port)
 						entries[i].Segments[name].URLS[j].Host = host
 					}
