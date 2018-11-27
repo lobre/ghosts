@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"net"
 
 	"github.com/lobre/goodhosts"
 )
@@ -45,13 +46,19 @@ func (h hostsProcessor) add(ids ...string) error {
 		}
 
 		ip := h.config.ProxyIP
-		if entry.Direct || (!h.config.ProxyMode && !h.config.TraefikMode) {
+		if entry.Direct || !h.config.ProxyMode {
 			ip = entry.IP
 		}
 
-		for _, host := range entry.Hosts {
-			if !hosts.Has(ip, host) {
-				hosts.Add(ip, host)
+		for _, segment := range entry.Segments {
+			for _, u := range segment.URLS {
+				host, _, err := net.SplitHostPort(u.Host)
+				if err != nil {
+					continue
+				}
+				if !hosts.Has(ip, host) {
+					hosts.Add(ip, host)
+				}
 			}
 		}
 	}
@@ -82,13 +89,19 @@ func (h hostsProcessor) remove(ids ...string) error {
 
 	for _, entry := range entries {
 		ip := h.config.ProxyIP
-		if entry.Direct || (!h.config.ProxyMode && !h.config.TraefikMode) {
+		if entry.Direct || !h.config.ProxyMode {
 			ip = entry.IP
 		}
 
-		for _, host := range entry.Hosts {
-			if hosts.Has(ip, host) {
-				hosts.Remove(ip, host)
+		for _, segment := range entry.Segments {
+			for _, u := range segment.URLS {
+				host, _, err := net.SplitHostPort(u.Host)
+				if err != nil {
+					continue
+				}
+				if hosts.Has(ip, host) {
+					hosts.Remove(ip, host)
+				}
 			}
 		}
 	}

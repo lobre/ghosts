@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -19,7 +20,7 @@ type entriesManager struct {
 }
 
 type segment struct {
-	URLS []string
+	URLS []url.URL
 	Port string
 }
 
@@ -82,8 +83,6 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 		entry.Auth = false
 		if val, ok := container.Labels[fmt.Sprintf("%s.auth", labelPrefix)]; ok && val == "true" {
 			entry.Auth = true
-		} else if val, ok := container.Labels["traefik.frontend.auth.basic"]; ok && val != "" && em.config.TraefikMode {
-			entry.Auth = true
 		}
 
 		// Category
@@ -143,14 +142,21 @@ func parseSegments(container types.Container) map[string]segment {
 	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.urls", labelPrefix))
 	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.port", labelPrefix))
 
-	var urlsMap map[string][]string
+	var urlsMap map[string][]url.URL
 	var portMap map[string]string
 
 	for key, value := range container.Labels {
 		// Segment URLS
 		if match := rURLS.FindStringSubmatch(key); match != nil {
 			name := match[1]
-			urlsMap[name] = strings.Split(value, ",")
+			urls := strings.Split(value, ",")
+			for _, u := range urls {
+				uParsed, err := url.Parse(u)
+				if err != nil {
+					continue
+				}
+				urlsMap[name] = append(urlsMap[name], *uParsed)
+			}
 		}
 		// Segment port
 		if match := rPort.FindStringSubmatch(key); match != nil {
@@ -159,7 +165,14 @@ func parseSegments(container types.Container) map[string]segment {
 		}
 		// Default URLS
 		if key == fmt.Sprintf("%s.urls", labelPrefix) {
-			urlsMap[""] = strings.Split(value, ",")
+			urls := strings.Split(value, ",")
+			for _, u := range urls {
+				uParsed, err := url.Parse(u)
+				if err != nil {
+					continue
+				}
+				urlsMap[""] = append(urlsMap[""], *uParsed)
+			}
 		}
 		// Default Port
 		if key == fmt.Sprintf("%s.port", labelPrefix) {
@@ -186,25 +199,4 @@ func parseSegments(container types.Container) map[string]segment {
 	}
 
 	return segments
-}
-
-func (em entriesManager) URLS(e entry) []string {
-	var urls []string
-	var port string
-
-	// Check specific port if direct mode
-	if e.Direct || e.WebDirect || (!em.config.ProxyMode && !em.config.TraefikMode) {
-		port = fmt.Sprintf(":%s", e.Port)
-
-		// Use container IP if hosts are not generated and in direct mode
-		if e.WebDirect || em.config.NoHosts || e.NoHosts {
-			return []string{fmt.Sprintf("%s://%s%s", e.Proto, e.IP, e.Port)}
-		}
-	}
-
-	for _, host := range e.Hosts {
-		urls = append(urls, fmt.Sprintf("%s://%s%s", e.Proto, host, port))
-	}
-
-	return urls
 }

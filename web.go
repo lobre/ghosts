@@ -2,36 +2,33 @@ package main
 
 import (
 	"html/template"
+	"net"
 	"net/http"
 	"strings"
 )
-
-type frontEntries map[string][]entry
 
 type appHandler struct {
 	config config
 	em     entriesManager
 }
 
-func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.New("index.html").Funcs(template.FuncMap{
 		"capitalize": strings.Title,
 		"upper":      strings.ToUpper,
 	}).ParseFiles("index.html")
 
-	entries, err := h.em.get()
+	entries, err := h.getPreparedEntries()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	err = tmpl.Execute(w, struct {
-		Config         config
-		EntriesManager entriesManager
-		Entries        frontEntries
+		Config  config
+		Entries map[string][]entry
 	}{
 		h.config,
-		h.em,
-		prepare(entries),
+		entries,
 	})
 
 	if err != nil {
@@ -39,13 +36,33 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Separate entries by categories
-func prepare(entries []entry) frontEntries {
-	categories := make(frontEntries)
-	for _, entry := range entries {
+// Separate entries by categories and replace urls/port if needed
+func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
+	categories := make(map[string][]entry)
+
+	entries, err := h.em.get()
+	if err != nil {
+		return categories, err
+	}
+
+	for i, entry := range entries {
 		if !entry.NoWeb {
-			categories[entry.Category] = append(categories[entry.Category], entry)
+			for name, segment := range entry.Segments {
+				for j, url := range segment.URLS {
+					if entry.WebDirect ||
+						((!h.config.ProxyMode || entry.Direct) && (h.config.NoHosts || entry.NoHosts)) {
+						// Replace IP and Port in URL
+						host := net.JoinHostPort(entry.IP, segment.Port)
+						entries[i].Segments[name].URLS[j].Host = host
+					} else if !h.config.ProxyMode || entry.Direct {
+						// Replace Port in URL
+						host := net.JoinHostPort(url.Host, segment.Port)
+						entries[i].Segments[name].URLS[j].Host = host
+					}
+				}
+			}
+			categories[entry.Category] = append(categories[entry.Category], entries[i])
 		}
 	}
-	return categories
+	return categories, nil
 }

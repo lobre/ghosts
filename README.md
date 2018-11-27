@@ -58,11 +58,10 @@ By default, only `C:\Users` is shared to the VM. So the hosts file won't be avai
 
 ## Modes
 
-Ghosts has three different modes.
+Ghosts has two different modes.
 
  - **Direct mode (default)**: containers IP will be used directly for matching with host.
  - **Proxy mode**: all containers hosts will be redirected to the proxy IP (can be defined using the binary parameter `-proxyIP`).
- - **Traefik mode**: Same as proxy mode but this will allow using traefik labels to generate hosts.
 
 ## Binary parameters
 
@@ -89,16 +88,13 @@ Ghosts has three different modes.
             Enable proxy
       -proxynetautoconnect
             Enable automatic network connection between proxy and containers
-      -traefikmode
-            Enable integration with Traefik proxy
 
 ## Container parameters as labels
 
- - `ghosts.hosts`: Host of container (e.g. mycontainer.local.com). If in traefik mode, it can be taken from `traefik.frontend.rule`.
- - `ghosts.port`: Override port. Otherwise taken from exposed ports or traefik port.
+ - `ghosts.urls`: Comma separated list of URLS for container (e.g. mycontainer.local.com).
+ - `ghosts.port`: Override internal exposed port.
  - `ghosts.name`: Define web name. Otherwise taken from the container name.
- - `ghosts.proto`: Define web protocol. If in traefik mode, it can be taken from `traefik.frontend.entryPoints`.
- - `ghosts.auth`: Define if auth protected entry. If in traefik mode, it can be taken from `traefik.frontend.auth.basic`.
+ - `ghosts.auth`: Define if auth protected entry. If true, a lock will be displayed on the web interface.
  - `ghosts.category`: Define a web category. Defaults to "Apps".
  - `ghosts.logo`: Define a web logo. Defaults to a generated avatar with the initials of the entry name.
  - `ghosts.description`: Add a web description that will appear as a tooltip.
@@ -107,3 +103,12 @@ Ghosts has three different modes.
  - `ghosts.nonetautoconnect`: Don't connect to proxy network.
  - `ghosts.direct`: Use direct container IP in hosts file even if in proxy mode.
  - `ghosts.webdirect`: Use direct container IP directly in web view even if in proxy mode.
+
+### Segments
+
+You can define multiple sets of urls/port using segments. They can be defined using the following labels structure.
+
+ - `ghosts.<my_segment_name>.urls`
+ - `ghosts.<my_segment_name>.port`
+
+The name of the segment will be shown on the web interface. This feature can be useful if your container has multiple vhosts (e.g. frontend and backend).

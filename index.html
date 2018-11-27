@@ -72,8 +72,11 @@
                                                 </div>
                                             </div>
                                             <div class="panel-body text-center">
-                                                {{range $host := $.EntriesManager.URLS . }}
-                                                    <a href="{{ $host }}" target="_blank">{{ $host }}</a>
+                                                {{ range $name, $segment := .Segments }}
+                                                    {{ if $name }}<p>{{ $name }}</p>{{ end }}
+                                                    {{ range $url := .URLS }}
+                                                        <a href="{{ $url.String() }}" target="_blank">{{ $url.String() }}</a>
+                                                    {{ end }}
                                                 {{ end }}
                                             </div>
                                         </div>

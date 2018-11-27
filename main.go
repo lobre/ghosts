@@ -15,7 +15,6 @@ type config struct {
 	Help                string
 	ProxyIP             string
 	Hosts               string
-	TraefikMode         bool
 	ProxyMode           bool
 	ProxyNetAutoConnect bool
 	ProxyContainerName  string
@@ -42,7 +41,6 @@ func main() {
 	flag.StringVar(&config.Help, "help", "https://github.com/lobre/ghosts/blob/master/README.md", "Change the Web help link")
 	flag.StringVar(&config.ProxyIP, "proxyip", "127.0.0.1", "Specific proxy IP for hosts entries")
 	flag.StringVar(&config.Hosts, "hosts", "", "Custom location for hosts file")
-	flag.BoolVar(&config.TraefikMode, "traefikmode", false, "Enable integration with Traefik proxy")
 	flag.BoolVar(&config.ProxyMode, "proxymode", false, "Enable proxy")
 	flag.BoolVar(&config.ProxyNetAutoConnect, "proxynetautoconnect", false, "Enable automatic network connection between proxy and containers")
 	flag.StringVar(&config.ProxyContainerName, "proxycontainername", "", "Name of proxy container")
@@ -60,19 +58,13 @@ func main() {
 	em := newEntriesManager(docker, config)
 
 	// Network
-	if (config.ProxyMode || config.TraefikMode) && config.ProxyNetAutoConnect {
-		proxyName := config.ProxyContainerName
-		if proxyName == "" && config.TraefikMode {
-			proxyName = "traefik"
+	if config.ProxyMode && config.ProxyNetAutoConnect && config.ProxyContainerName != "" {
+		np, err := newNetworksProcessor(docker, config, em, config.ProxyContainerName)
+		if err != nil {
+			log.Fatal(err)
 		}
-		if proxyName != "" {
-			np, err := newNetworksProcessor(docker, config, em, proxyName)
-			if err != nil {
-				log.Fatal(err)
-			}
 
-			listener.addProcessor(np)
-		}
+		listener.addProcessor(np)
 	}
 
 	// Hosts
