@@ -53,7 +53,8 @@
     overflow: hidden;
 }
 
-.entry .panel .panel-body a {
+.entry .panel .panel-body a, 
+.entry .panel .panel-body b {
     font-size: 12px;
 }
 

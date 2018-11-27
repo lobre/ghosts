@@ -137,13 +137,13 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 }
 
 func parseSegments(container types.Container) map[string]segment {
-	var segments map[string]segment
+	segments := make(map[string]segment)
 
 	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.urls", labelPrefix))
 	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.port", labelPrefix))
 
-	var urlsMap map[string][]url.URL
-	var portMap map[string]string
+	urlsMap := make(map[string][]url.URL)
+	portMap := make(map[string]string)
 
 	for key, value := range container.Labels {
 		// Segment URLS
@@ -151,6 +151,9 @@ func parseSegments(container types.Container) map[string]segment {
 			name := match[1]
 			urls := strings.Split(value, ",")
 			for _, u := range urls {
+				if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
+					u = fmt.Sprintf("http://%s", u)
+				}
 				uParsed, err := url.Parse(u)
 				if err != nil {
 					continue
@@ -167,6 +170,9 @@ func parseSegments(container types.Container) map[string]segment {
 		if key == fmt.Sprintf("%s.urls", labelPrefix) {
 			urls := strings.Split(value, ",")
 			for _, u := range urls {
+				if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
+					u = fmt.Sprintf("http://%s", u)
+				}
 				uParsed, err := url.Parse(u)
 				if err != nil {
 					continue

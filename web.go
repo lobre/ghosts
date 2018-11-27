@@ -48,15 +48,16 @@ func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
 	for i, entry := range entries {
 		if !entry.NoWeb {
 			for name, segment := range entry.Segments {
-				for j, url := range segment.URLS {
+				for j, u := range segment.URLS {
 					if entry.WebDirect ||
 						((!h.config.ProxyMode || entry.Direct) && (h.config.NoHosts || entry.NoHosts)) {
 						// Replace IP and Port in URL
+						// TODO put out of for to have only 1 url and 1 segment per entry
 						host := net.JoinHostPort(entry.IP, segment.Port)
 						entries[i].Segments[name].URLS[j].Host = host
 					} else if !h.config.ProxyMode || entry.Direct {
 						// Replace Port in URL
-						host := net.JoinHostPort(url.Host, segment.Port)
+						host := net.JoinHostPort(u.Host, segment.Port)
 						entries[i].Segments[name].URLS[j].Host = host
 					}
 				}
