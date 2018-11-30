@@ -6,7 +6,8 @@ RUN apk add --no-cache git
 
 # Install golang depencencies
 RUN go get github.com/docker/docker/client && \
-    go get github.com/lobre/goodhosts
+    go get github.com/lobre/goodhosts && \
+    go get github.com/iancoleman/strcase
 
 # Add sources
 ADD . /src

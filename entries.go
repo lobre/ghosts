@@ -139,8 +139,8 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 func parseSegments(container types.Container) map[string]segment {
 	segments := make(map[string]segment)
 
-	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.urls", labelPrefix))
-	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z]+)\\.port", labelPrefix))
+	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.urls", labelPrefix))
+	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.port", labelPrefix))
 
 	urlsMap := make(map[string][]url.URL)
 	portMap := make(map[string]string)

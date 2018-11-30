@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 type appHandler struct {
@@ -15,8 +17,8 @@ type appHandler struct {
 
 func (h appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.New("index.html").Funcs(template.FuncMap{
-		"capitalize": strings.Title,
-		"upper":      strings.ToUpper,
+		"upper":   strings.ToUpper,
+		"spacify": spacify,
 	}).ParseFiles("index.html")
 
 	entries, err := h.getPreparedEntries()
@@ -85,4 +87,8 @@ func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
 		}
 	}
 	return categories, nil
+}
+
+func spacify(s string) string {
+	return strings.Title(strcase.ToDelimited(s, ' '))
 }
