@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
-	"net"
-	"strings"
 
 	"github.com/lobre/goodhosts"
 )
@@ -52,15 +50,7 @@ func (h hostsProcessor) add(ids ...string) error {
 		}
 
 		for _, segment := range entry.Segments {
-			for _, u := range segment.URLS {
-				host := u.Host
-				if strings.Contains(host, ":") {
-					var err error
-					host, _, err = net.SplitHostPort(u.Host)
-					if err != nil {
-						continue
-					}
-				}
+			for _, host := range segment.Hosts {
 				if !hosts.Has(ip, host) {
 					hosts.Add(ip, host)
 				}
@@ -99,15 +89,7 @@ func (h hostsProcessor) remove(ids ...string) error {
 		}
 
 		for _, segment := range entry.Segments {
-			for _, u := range segment.URLS {
-				host := u.Host
-				if strings.Contains(host, ":") {
-					var err error
-					host, _, err = net.SplitHostPort(u.Host)
-					if err != nil {
-						continue
-					}
-				}
+			for _, host := range segment.Hosts {
 				if hosts.Has(ip, host) {
 					hosts.Remove(ip, host)
 				}

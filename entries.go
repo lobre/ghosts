@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -20,8 +19,10 @@ type entriesManager struct {
 }
 
 type segment struct {
-	URLS []url.URL
-	Port string
+	Hosts []string
+	Paths []string
+	Port  string
+	Proto string
 }
 
 type entry struct {
@@ -140,26 +141,31 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 func parseSegments(container types.Container) map[string]segment {
 	segments := make(map[string]segment)
 
-	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.url", labelPrefix))
-	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.port", labelPrefix))
+	regex := fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.", labelPrefix)
 
-	urlsMap := make(map[string][]url.URL)
+	rHosts := regexp.MustCompile(fmt.Sprint(regex, "host"))
+	rPaths := regexp.MustCompile(fmt.Sprint(regex, "path"))
+	rPort := regexp.MustCompile(fmt.Sprint(regex, "port"))
+	rProto := regexp.MustCompile(fmt.Sprint(regex, "proto"))
+
+	hostsMap := make(map[string][]string)
+	pathsMap := make(map[string][]string)
 	portMap := make(map[string]string)
+	protoMap := make(map[string]string)
 
 	for key, value := range container.Labels {
-		// Segment URLS
-		if match := rURLS.FindStringSubmatch(key); match != nil {
+		// Segment Hosts
+		if match := rHosts.FindStringSubmatch(key); match != nil {
 			name := match[1]
-			urls := strings.Split(value, ",")
-			for _, u := range urls {
-				if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
-					u = fmt.Sprintf("http://%s", u)
-				}
-				uParsed, err := url.Parse(u)
-				if err != nil {
-					continue
-				}
-				urlsMap[name] = append(urlsMap[name], *uParsed)
+			for _, host := range strings.Split(value, ",") {
+				hostsMap[name] = append(hostsMap[name], host)
+			}
+		}
+		// Segment Paths
+		if match := rPaths.FindStringSubmatch(key); match != nil {
+			name := match[1]
+			for _, path := range strings.Split(value, ",") {
+				pathsMap[name] = append(pathsMap[name], path)
 			}
 		}
 		// Segment port
@@ -167,23 +173,30 @@ func parseSegments(container types.Container) map[string]segment {
 			name := match[1]
 			portMap[name] = value
 		}
-		// Default URLS
-		if key == fmt.Sprintf("%s.url", labelPrefix) {
-			urls := strings.Split(value, ",")
-			for _, u := range urls {
-				if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {
-					u = fmt.Sprintf("http://%s", u)
-				}
-				uParsed, err := url.Parse(u)
-				if err != nil {
-					continue
-				}
-				urlsMap[""] = append(urlsMap[""], *uParsed)
+		// Segment proto
+		if match := rProto.FindStringSubmatch(key); match != nil {
+			name := match[1]
+			protoMap[name] = value
+		}
+		// Default Hosts
+		if key == fmt.Sprintf("%s.host", labelPrefix) {
+			for _, u := range strings.Split(value, ",") {
+				hostsMap[""] = append(hostsMap[""], u)
+			}
+		}
+		// Default Paths
+		if key == fmt.Sprintf("%s.path", labelPrefix) {
+			for _, u := range strings.Split(value, ",") {
+				pathsMap[""] = append(pathsMap[""], u)
 			}
 		}
 		// Default Port
 		if key == fmt.Sprintf("%s.port", labelPrefix) {
 			portMap[""] = value
+		}
+		// Default Proto
+		if key == fmt.Sprintf("%s.proto", labelPrefix) {
+			protoMap[""] = value
 		}
 	}
 
@@ -194,14 +207,31 @@ func parseSegments(container types.Container) map[string]segment {
 		break
 	}
 
-	// Bind urls and port
-	for name, urls := range urlsMap {
-		s := segment{URLS: urls}
+	// Bind to create segments
+	for name, hosts := range hostsMap {
+		s := segment{Hosts: hosts}
+
+		// Bind paths
+		if paths, ok := pathsMap[name]; ok {
+			s.Paths = paths
+		} else {
+			s.Paths = []string{"/"}
+		}
+
+		// Bind port
 		if port, ok := portMap[name]; ok {
 			s.Port = port
 		} else {
 			s.Port = defaultPort
 		}
+
+		// Bind proto
+		if proto, ok := protoMap[name]; ok {
+			s.Proto = proto
+		} else {
+			s.Proto = "http"
+		}
+
 		segments[name] = s
 	}
 

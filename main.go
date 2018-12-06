@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
@@ -107,7 +108,7 @@ func main() {
 	<-sigstop
 
 	// Gracefully stop web server
-	if err := server.Shutdown(nil); err != nil {
+	if err := server.Shutdown(context.Background()); err != nil {
 		log.Fatal(err)
 	}
 

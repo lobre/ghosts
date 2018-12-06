@@ -34,7 +34,7 @@
         </header>
         <div class="wrapper">
             <div class="container">
-                {{ range $category, $entries := .Entries }}
+                {{ range $category, $webEntries := .WebEntries }}
                 <div class="columns">
                     <div class="column col-3">
                         <div class="category">
@@ -45,38 +45,38 @@
                     </div>
                     <div class="column col-9">
                         <div class="columns">
-                            {{range $entry := $entries }}
+                            {{range $webEntry := $webEntries }}
                                 <div class="column col-4">
                                     <div class="entry">
                                         <div class="panel">
                                             <div class="panel-header text-center">
                                                 <div class="popover popover-right">
                                                     <figure class="avatar avatar-xl">
-                                                        {{ if .Logo }}
-                                                            <img class="bg-gray" src="{{ .Logo }}" alt="{{ .Name }}">
+                                                        {{ if .Entry.Logo }}
+                                                            <img class="bg-gray" src="{{ .Entry.Logo }}" alt="{{ .Entry.Name }}">
                                                         {{ else }}
-                                                            <img data-name="{{ .Name }}" alt="{{ .Name }}" class="initial"/>
+                                                            <img data-name="{{ .Entry.Name }}" alt="{{ .Entry.Name }}" class="initial"/>
                                                         {{ end }}
                                                     </figure>
 
-                                                    {{ if .Description }}
+                                                    {{ if .Entry.Description }}
                                                     <div class="popover-container">
                                                         <div class="card">
-                                                            <div class="card-header">{{ .Description }}</div>
+                                                            <div class="card-header">{{ .Entry.Description }}</div>
                                                         </div>
                                                     </div>
                                                     {{ end }}
                                                 </div>
                                                 <div class="panel-subtitle">
-                                                    {{ if .Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Name | upper }}
+                                                    {{ if .Entry.Auth }}<i class="fas fa-lock"></i> {{ end }}{{ .Entry.Name | upper }}
                                                 </div>
                                             </div>
                                             <div class="panel-body text-center">
-                                                {{ range $name, $segment := .Segments }}
+                                                {{ range $name, $urls := .URLS }}
                                                     <div class="segment">
                                                     {{ if $name }}<div class="segment-name">{{ $name | spacify }}</div>{{ end }}
-                                                    {{ range $url := .URLS }}
-                                                        <a href="{{ $url.String }}" target="_blank">{{ $url.String }}</a>
+                                                    {{ range $url := $urls }}
+                                                        <a href="{{ $url }}" target="_blank">{{ $url }}</a>
                                                     {{ end }}
                                                     </div>
                                                 {{ end }}

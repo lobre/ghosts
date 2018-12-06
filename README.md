@@ -13,21 +13,21 @@ This Go program will listen for Docker events and fill the gaps of:
 See the web interface after having created the following containers.
 
     docker run -d --name test1 \
-        --label ghosts.url="test1.local" \
+        --label ghosts.host="test1.local" \
         nginx
 
     docker run -d --name test2 \
         --label ghosts.category="System" \
-        --label ghosts.url="test2.local" \
+        --label ghosts.host="test2.local" \
         nginx
 
     docker run -d --name test3 \
-        --label ghosts.url="test3.local" \
+        --label ghosts.host="test3.local" \
         --label ghosts.name="Friendly app" \
         nginx
 
     docker run -d --name test4 \
-        --label ghosts.url="test4.local" \
+        --label ghosts.host="test4.local" \
         --label ghosts.name="Jenkins" \
         --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
         nginx
@@ -91,8 +91,10 @@ Ghosts has two different modes.
 
 ## Container parameters as labels
 
- - `ghosts.url`: Comma separated list of URLS for container (e.g. mycontainer.local.com).
+ - `ghosts.host`: Comma separated list of hosts for container (e.g. mycontainer.local.com).
+ - `ghosts.path`: Comma separated list of paths for container (e.g. /my-path).
  - `ghosts.port`: Override internal exposed port.
+ - `ghosts.proto`: "http" or "https" (default "http").
  - `ghosts.name`: Define web name. Otherwise taken from the container name.
  - `ghosts.auth`: Define if auth protected entry. If true, a lock will be displayed on the web interface.
  - `ghosts.category`: Define a web category. Defaults to "Apps". Supports multiple values (comma separated list).
@@ -108,7 +110,9 @@ Ghosts has two different modes.
 
 You can define multiple sets of urls/port using segments. They can be defined using the following labels structure.
 
- - `ghosts.<my_segment_name>.url`
+ - `ghosts.<my_segment_name>.host`
+ - `ghosts.<my_segment_name>.path`
  - `ghosts.<my_segment_name>.port`
+ - `ghosts.<my_segment_name>.proto`
 
 The name of the segment will be shown on the web interface. This feature can be useful if your container has multiple vhosts (e.g. frontend and backend).
