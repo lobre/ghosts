@@ -13,21 +13,21 @@ This Go program will listen for Docker events and fill the gaps of:
 See the web interface after having created the following containers.
 
     docker run -d --name test1 \
-        --label ghosts.urls="test1.local" \
+        --label ghosts.url="test1.local" \
         nginx
 
     docker run -d --name test2 \
         --label ghosts.category="System" \
-        --label ghosts.urls="test2.local" \
+        --label ghosts.url="test2.local" \
         nginx
 
     docker run -d --name test3 \
-        --label ghosts.urls="test3.local" \
+        --label ghosts.url="test3.local" \
         --label ghosts.name="Friendly app" \
         nginx
 
     docker run -d --name test4 \
-        --label ghosts.urls="test4.local" \
+        --label ghosts.url="test4.local" \
         --label ghosts.name="Jenkins" \
         --label ghosts.logo="https://wiki.jenkins.io/download/attachments/2916393/logo.png" \
         nginx
@@ -91,11 +91,11 @@ Ghosts has two different modes.
 
 ## Container parameters as labels
 
- - `ghosts.urls`: Comma separated list of URLS for container (e.g. mycontainer.local.com).
+ - `ghosts.url`: Comma separated list of URLS for container (e.g. mycontainer.local.com).
  - `ghosts.port`: Override internal exposed port.
  - `ghosts.name`: Define web name. Otherwise taken from the container name.
  - `ghosts.auth`: Define if auth protected entry. If true, a lock will be displayed on the web interface.
- - `ghosts.category`: Define a web category. Defaults to "Apps".
+ - `ghosts.category`: Define a web category. Defaults to "Apps". Supports multiple values (comma separated list).
  - `ghosts.logo`: Define a web logo. Defaults to a generated avatar with the initials of the entry name.
  - `ghosts.description`: Add a web description that will appear as a tooltip.
  - `ghosts.noweb`: Don't show on the web.
@@ -108,7 +108,7 @@ Ghosts has two different modes.
 
 You can define multiple sets of urls/port using segments. They can be defined using the following labels structure.
 
- - `ghosts.<my_segment_name>.urls`
+ - `ghosts.<my_segment_name>.url`
  - `ghosts.<my_segment_name>.port`
 
 The name of the segment will be shown on the web interface. This feature can be useful if your container has multiple vhosts (e.g. frontend and backend).

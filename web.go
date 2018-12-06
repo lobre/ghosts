@@ -83,7 +83,9 @@ func (h appHandler) getPreparedEntries() (map[string][]entry, error) {
 					}
 				}
 			}
-			categories[entry.Category] = append(categories[entry.Category], entries[i])
+			for _, c := range entry.Category {
+				categories[c] = append(categories[c], entries[i])
+			}
 		}
 	}
 	return categories, nil

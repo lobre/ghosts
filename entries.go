@@ -30,7 +30,7 @@ type entry struct {
 	NetworkID string
 
 	Name        string
-	Category    string
+	Category    []string
 	Description string
 	Logo        string
 	Auth        bool
@@ -86,9 +86,10 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 		}
 
 		// Category
-		entry.Category = defaultCategory
+		entry.Category = []string{defaultCategory}
 		if val, ok := container.Labels[fmt.Sprintf("%s.category", labelPrefix)]; ok {
-			entry.Category = strings.ToLower(val)
+			val = strings.ToLower(val)
+			entry.Category = strings.Split(val, ",")
 		}
 
 		// Logo
@@ -139,7 +140,7 @@ func (em entriesManager) get(ids ...string) ([]entry, error) {
 func parseSegments(container types.Container) map[string]segment {
 	segments := make(map[string]segment)
 
-	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.urls", labelPrefix))
+	rURLS := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.url", labelPrefix))
 	rPort := regexp.MustCompile(fmt.Sprintf("%s\\.([a-zA-Z0-9_-]+)\\.port", labelPrefix))
 
 	urlsMap := make(map[string][]url.URL)
@@ -167,7 +168,7 @@ func parseSegments(container types.Container) map[string]segment {
 			portMap[name] = value
 		}
 		// Default URLS
-		if key == fmt.Sprintf("%s.urls", labelPrefix) {
+		if key == fmt.Sprintf("%s.url", labelPrefix) {
 			urls := strings.Split(value, ",")
 			for _, u := range urls {
 				if !strings.HasPrefix(u, "http://") && !strings.HasPrefix(u, "https://") {

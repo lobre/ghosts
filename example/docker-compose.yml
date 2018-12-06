@@ -14,7 +14,7 @@ services:
       - traefik.enable=true
       - traefik.port=8080
       - traefik.frontend.rule=Host:traefik.local
-      - ghosts.urls=traefik.local
+      - ghosts.url=traefik.local
       - ghosts.category=~tools
       - ghosts.logo=http://ghosts.local/static/traefik.png
       - ghosts.description=Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
@@ -32,7 +32,7 @@ services:
       - traefik.enable=true
       - traefik.port=8080
       - traefik.frontend.rule=Host:ghosts.local
-      - ghosts.urls=ghosts.local
+      - ghosts.url=ghosts.local
       - ghosts.noweb=true
     depends_on:
       - traefik
@@ -47,7 +47,7 @@ services:
       - traefik.enable=true
       - traefik.port=9000
       - traefik.frontend.rule=Host:portainer.local
-      - ghosts.urls=portainer.local
+      - ghosts.url=portainer.local
       - ghosts.category=~tools
       - ghosts.logo=http://ghosts.local/static/portainer.png
       - ghosts.description=Portainer is an open-source lightweight management UI which allows you to easily manage your docker hosts or swarm clusters.
