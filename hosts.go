@@ -91,6 +91,13 @@ func (h hostsProcessor) remove(ids ...string) error {
 		for _, segment := range entry.Segments {
 			for _, host := range segment.Hosts {
 				if hosts.Has(ip, host) {
+					isUnique, err := h.isUnique(host, entry)
+					if err != nil {
+						return err
+					}
+					if h.config.ProxyMode && !entry.Direct && !isUnique {
+						continue
+					}
 					hosts.Remove(ip, host)
 				}
 			}
@@ -108,6 +115,26 @@ func (h hostsProcessor) remove(ids ...string) error {
 	}
 
 	return nil
+}
+
+// Check if host exist in another container
+func (h hostsProcessor) isUnique(host string, entry entry) (bool, error) {
+	entries, err := h.em.get()
+	if err != nil {
+		return false, err
+	}
+	for _, e := range entries {
+		if e.Name != entry.Name {
+			for _, s := range e.Segments {
+				for _, h := range s.Hosts {
+					if h == host {
+						return false, nil
+					}
+				}
+			}
+		}
+	}
+	return true, nil
 }
 
 // To be shifted the the goodhosts project
