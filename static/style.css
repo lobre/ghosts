@@ -86,3 +86,7 @@
 .avatar {
     background: none;
 }
+
+.accordion-header {
+    cursor: pointer;
+}
