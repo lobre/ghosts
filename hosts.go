@@ -31,9 +31,13 @@ func (h hostsProcessor) add(ids ...string) error {
 		return err
 	}
 
-	hosts, err := goodhosts.NewHosts()
+	hosts, err := goodhosts.NewHostsPath(h.config.Hosts)
 	if err != nil {
 		return err
+	}
+
+	if h.config.HostsForceWindowsStyle {
+		hosts.ForceWindowsStyle()
 	}
 
 	for _, entry := range entries {
@@ -54,7 +58,7 @@ func (h hostsProcessor) add(ids ...string) error {
 		}
 	}
 
-	if err := hosts.Flush(h.config.HostsForceCRLF); err != nil {
+	if err := hosts.Flush(); err != nil {
 		return err
 	}
 
@@ -67,9 +71,13 @@ func (h hostsProcessor) remove(ids ...string) error {
 		return err
 	}
 
-	hosts, err := goodhosts.NewHosts()
+	hosts, err := goodhosts.NewHostsPath(h.config.Hosts)
 	if err != nil {
 		return err
+	}
+
+	if h.config.HostsForceWindowsStyle {
+		hosts.ForceWindowsStyle()
 	}
 
 	for _, entry := range entries {
@@ -94,7 +102,7 @@ func (h hostsProcessor) remove(ids ...string) error {
 		}
 	}
 
-	if err := hosts.Flush(h.config.HostsForceCRLF); err != nil {
+	if err := hosts.Flush(); err != nil {
 		return err
 	}
 

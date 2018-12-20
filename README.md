@@ -46,9 +46,9 @@ To let the container edit the `C:\Windows\System32\drivers\etc\hosts`, we need t
 
 ![screenshot](https://raw.githubusercontent.com/lobre/ghosts/master/img/windows_permissions.png)
 
-Then, we also need to add the `forcecrlf` parameter of ghosts to be sure we use Windows style end-of-line characters.
+Then, we also need to add the `hostsforcewindowsstyle` parameter of ghosts to be sure we use Windows style end-of-line characters.
 
-    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -hostsforcecrlf
+    docker run --rm --name ghosts -v /var/run/docker.sock:/var/run/docker.sock -v /c/etc/hosts:/app/hosts -p 8080:8080 lobre/ghosts -hostsforcewindowsstyle
 
 #### Docker machine Virtualbox
 
@@ -72,8 +72,8 @@ Ghosts has two different modes.
             Change the Web help link (default "https://github.com/lobre/ghosts/blob/master/README.md")
       -hosts string
             Custom location for hosts file
-      -hostsforcecrlf
-            Force CRLF end of lines when generating hosts entries
+      -hostsforcewindowsstyle
+            Force CRLF end of lines and one entry per line when generating hosts entries
       -nohelp
             Disable help on web interface
       -nohosts

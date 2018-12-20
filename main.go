@@ -12,17 +12,17 @@ import (
 )
 
 type config struct {
-	Addr                string
-	Help                string
-	ProxyIP             string
-	Hosts               string
-	ProxyMode           bool
-	ProxyNetAutoConnect bool
-	ProxyContainerName  string
-	NoHosts             bool
-	NoWeb               bool
-	NoHelp              bool
-	HostsForceCRLF      bool
+	Addr                   string
+	Help                   string
+	ProxyIP                string
+	Hosts                  string
+	ProxyMode              bool
+	ProxyNetAutoConnect    bool
+	ProxyContainerName     string
+	NoHosts                bool
+	NoWeb                  bool
+	NoHelp                 bool
+	HostsForceWindowsStyle bool
 }
 
 type processor interface {
@@ -48,12 +48,8 @@ func main() {
 	flag.BoolVar(&config.NoHosts, "nohosts", false, "Don't generate hosts file")
 	flag.BoolVar(&config.NoWeb, "noweb", false, "Don't start web server")
 	flag.BoolVar(&config.NoHelp, "nohelp", false, "Disable help on web interface")
-	flag.BoolVar(&config.HostsForceCRLF, "hostsforcecrlf", false, "Force CRLF end of lines when generating hosts entries")
+	flag.BoolVar(&config.HostsForceWindowsStyle, "hostsforcewindowsstyle", false, "Force CRLF end of lines and one line per entry when generating hosts entries")
 	flag.Parse()
-
-	if config.Hosts != "" {
-		os.Setenv("HOSTS_PATH", config.Hosts)
-	}
 
 	listener := newListener(docker)
 	em := newEntriesManager(docker, config)
