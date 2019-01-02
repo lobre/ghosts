@@ -23,6 +23,8 @@ type config struct {
 	NoWeb                  bool
 	NoHelp                 bool
 	HostsForceWindowsStyle bool
+	WebNavBgColor          string
+	WebNavTextColor        string
 }
 
 type processor interface {
@@ -49,6 +51,8 @@ func main() {
 	flag.BoolVar(&config.NoWeb, "noweb", false, "Don't start web server")
 	flag.BoolVar(&config.NoHelp, "nohelp", false, "Disable help on web interface")
 	flag.BoolVar(&config.HostsForceWindowsStyle, "hostsforcewindowsstyle", false, "Force CRLF end of lines and one line per entry when generating hosts entries")
+	flag.StringVar(&config.WebNavBgColor, "webnavbgcolor", "#f1f1fc", "Color of navbar on the web interface")
+	flag.StringVar(&config.WebNavTextColor, "webnavtextcolor", "#50596c", "Color of the navbar text on the web interface")
 	flag.Parse()
 
 	listener := newListener(docker)

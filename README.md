@@ -88,6 +88,10 @@ Ghosts has two different modes.
             Enable proxy
       -proxynetautoconnect
             Enable automatic network connection between proxy and containers
+      -webnavbgcolor
+            Color of navbar on the web interface (default "#f1f1fc")
+      -webnavtextcolor
+            Color of the navbar text on the web interface (default "#50596c")
 
 ## Container parameters as labels
 
