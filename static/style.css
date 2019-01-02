@@ -33,6 +33,10 @@
     margin-right: .5rem;
 }
 
+.columns {
+    margin: 0;
+}
+
 .column { 
     padding: .5rem; 
 }
@@ -67,8 +71,13 @@
     padding: .5rem;
 }
 
+.category h5 {
+    margin: 0;
+}
+
 .category .panel{
     height: 100%;
+    min-height: 100px;
     align-items: center;
     justify-content: center;
     border: none;

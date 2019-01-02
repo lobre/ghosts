@@ -29,24 +29,24 @@
                 </div>
             </section>
             <section class="navbar-section">
-                <cite>- A Docker discreet companion</cite>
+                <cite class="hide-md">- A Docker discreet companion</cite>
             </section>
         </header>
         <div class="wrapper">
             <div class="container">
                 {{ range $category, $webEntries := .WebEntries }}
                 <div class="columns">
-                    <div class="column col-3">
+                    <div class="column col-3 col-md-12">
                         <div class="category">
                             <div class="panel bg-gray">
                                 <h5>{{ $category | spacify }}</h5>
                             </div>
                         </div>
                     </div>
-                    <div class="column col-9">
+                    <div class="column col-9 col-md-12">
                         <div class="columns">
                             {{range $index, $webEntry := $webEntries }}
-                                <div class="column col-4">
+                                <div class="column col-4 col-md-6 col-xs-12">
                                     <div class="entry">
                                         <div class="panel">
                                             <div class="panel-header text-center">
