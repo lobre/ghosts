@@ -40,6 +40,8 @@ COPY --from=build-env /src/static/ /app/static/
 # Define workdir
 WORKDIR /app
 
+EXPOSE 8080
+
 # Create fake hosts file
 RUN touch /app/hosts
 
