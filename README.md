@@ -92,6 +92,8 @@ Ghosts has two different modes.
             Color of navbar on the web interface (default "#f1f1fc")
       -webnavtextcolor
             Color of the navbar text on the web interface (default "#50596c")
+      -metrics
+            Set to true to enable Prometheus metrics at /metrics
 
 ## Container parameters as labels
 

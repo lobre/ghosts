@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type config struct {
@@ -25,6 +27,7 @@ type config struct {
 	HostsForceWindowsStyle bool
 	WebNavBgColor          string
 	WebNavTextColor        string
+	Metrics                bool
 }
 
 type processor interface {
@@ -53,6 +56,7 @@ func main() {
 	flag.BoolVar(&config.HostsForceWindowsStyle, "hostsforcewindowsstyle", false, "Force CRLF end of lines and one line per entry when generating hosts entries")
 	flag.StringVar(&config.WebNavBgColor, "webnavbgcolor", "#f1f1fc", "Color of navbar on the web interface")
 	flag.StringVar(&config.WebNavTextColor, "webnavtextcolor", "#50596c", "Color of the navbar text on the web interface")
+	flag.BoolVar(&config.Metrics, "metrics", false, "Enable prometheus metrics at /metrics")
 	flag.Parse()
 
 	listener := newListener(docker)
@@ -74,6 +78,12 @@ func main() {
 		listener.addProcessor(hp)
 	}
 
+	// Metrics
+	if config.Metrics {
+		mp := newMetricsProcessor(em)
+		listener.addProcessor(mp)
+	}
+
 	var wg sync.WaitGroup
 	sigstop := make(chan os.Signal)
 	listenerStop := make(chan int)
@@ -92,6 +102,9 @@ func main() {
 	// Web routine
 	server := &http.Server{Addr: config.Addr}
 	http.Handle("/", &appHandler{config, em})
+	if config.Metrics {
+		http.Handle("/metrics", promhttp.Handler())
+	}
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 	if !config.NoWeb {
 		wg.Add(1)
