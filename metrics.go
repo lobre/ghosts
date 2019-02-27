@@ -29,7 +29,7 @@ func (h *metricsProcessor) init() error {
 		return err
 	}
 	for _, entry := range entries {
-		h.nbContainers.WithLabelValues(entry.Category...).Inc()
+		h.nbContainers.WithLabelValues(entry.Category[0]).Inc()
 	}
 
 	return nil
@@ -41,7 +41,7 @@ func (h *metricsProcessor) startEvent(id string) error {
 		return err
 	}
 	for _, entry := range entries {
-		h.nbContainers.WithLabelValues(entry.Category...).Inc()
+		h.nbContainers.WithLabelValues(entry.Category[0]).Inc()
 	}
 	return nil
 }
@@ -52,7 +52,7 @@ func (h *metricsProcessor) dieEvent(id string) error {
 		return err
 	}
 	for _, entry := range entries {
-		h.nbContainers.WithLabelValues(entry.Category...).Dec()
+		h.nbContainers.WithLabelValues(entry.Category[0]).Dec()
 	}
 	return nil
 }
